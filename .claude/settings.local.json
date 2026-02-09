@@ -6,7 +6,11 @@
       "Bash(node:*)",
       "Bash(curl:*)",
       "Bash(python -m json.tool:*)",
-      "Bash(del \"c:\\\\Users\\\\Administrator\\\\Desktop\\\\Claude Test\\\\project\\\\hirework.db\")"
+      "Bash(del \"c:\\\\Users\\\\Administrator\\\\Desktop\\\\Claude Test\\\\project\\\\hirework.db\")",
+      "Bash(git rm:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }
