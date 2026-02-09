@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm init:*)",
+      "Bash(npm install:*)",
+      "Bash(node:*)",
+      "Bash(curl:*)",
+      "Bash(python -m json.tool:*)",
+      "Bash(del \"c:\\\\Users\\\\Administrator\\\\Desktop\\\\Claude Test\\\\project\\\\hirework.db\")"
+    ]
+  }
+}
