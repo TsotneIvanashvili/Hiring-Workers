@@ -563,6 +563,21 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
+// ─── Mobile Menu ───
+function toggleMobileMenu() {
+    document.getElementById('hamburger').classList.toggle('active');
+    document.getElementById('nav-menu').classList.toggle('active');
+    document.getElementById('nav-overlay').classList.toggle('active');
+    document.body.style.overflow = document.getElementById('nav-menu').classList.contains('active') ? 'hidden' : '';
+}
+
+function closeMobileMenu() {
+    document.getElementById('hamburger').classList.remove('active');
+    document.getElementById('nav-menu').classList.remove('active');
+    document.getElementById('nav-overlay').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
 // Close modal on overlay click
 document.addEventListener('click', (e) => {
     if (e.target.id === 'post-modal') {
@@ -574,5 +589,12 @@ document.addEventListener('click', (e) => {
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && document.activeElement.id === 'hero-search') {
         heroSearch();
+    }
+});
+
+// Close mobile menu on window resize (if opened and resized to desktop)
+window.addEventListener('resize', () => {
+    if (window.innerWidth > 768) {
+        closeMobileMenu();
     }
 });

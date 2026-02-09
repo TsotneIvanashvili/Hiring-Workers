@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HireWork - Find & Hire Skilled Workers</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -11,30 +14,44 @@
 <!-- Navbar -->
 <nav class="navbar">
     <div class="nav-brand" onclick="navigate('home')">HireWork <span>PRO</span></div>
-    <div class="nav-links">
-        <button class="nav-link active" data-page="home" onclick="navigate('home')">Home</button>
-        <button class="nav-link" data-page="workers" onclick="navigate('workers')">Workers</button>
-        <button class="nav-link" data-page="posts" onclick="navigate('posts')">Posts</button>
-        <button class="nav-link" data-page="dashboard" onclick="navigate('dashboard')" id="nav-dashboard" style="display:none;">Dashboard</button>
-    </div>
-    <div class="nav-auth" id="nav-auth">
-        <button class="btn btn-outline btn-sm" onclick="navigate('auth')">Log In</button>
-        <button class="btn btn-primary btn-sm" onclick="navigate('auth', 'register')">Sign Up</button>
-    </div>
-    <div class="nav-auth" id="nav-user" style="display:none;">
-        <span class="user-badge" id="user-display"></span>
-        <button class="btn btn-outline btn-sm" onclick="logout()">Log Out</button>
+
+    <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <div class="nav-menu" id="nav-menu">
+        <div class="nav-links">
+            <button class="nav-link active" data-page="home" onclick="navigate('home'); closeMobileMenu()">Home</button>
+            <button class="nav-link" data-page="workers" onclick="navigate('workers'); closeMobileMenu()">Workers</button>
+            <button class="nav-link" data-page="posts" onclick="navigate('posts'); closeMobileMenu()">Posts</button>
+            <button class="nav-link" data-page="dashboard" onclick="navigate('dashboard'); closeMobileMenu()" id="nav-dashboard" style="display:none;">Dashboard</button>
+        </div>
+        <div class="nav-auth" id="nav-auth">
+            <button class="btn btn-outline btn-sm" onclick="navigate('auth'); closeMobileMenu()">Log In</button>
+            <button class="btn btn-primary btn-sm" onclick="navigate('auth', 'register'); closeMobileMenu()">Sign Up</button>
+        </div>
+        <div class="nav-auth" id="nav-user" style="display:none;">
+            <span class="user-badge" id="user-display"></span>
+            <button class="btn btn-outline btn-sm" onclick="logout(); closeMobileMenu()">Log Out</button>
+        </div>
     </div>
 </nav>
+
+<!-- Mobile overlay -->
+<div class="nav-overlay" id="nav-overlay" onclick="closeMobileMenu()"></div>
 
 <!-- ═══════════════ HOME PAGE ═══════════════ -->
 <div class="page active" id="page-home">
     <div class="hero">
-        <h1>Hire Skilled Workers Instantly</h1>
-        <p>Find trusted professionals for design, construction, technology, and more. Browse categories or search for the perfect match.</p>
-        <div class="search-box">
-            <input type="text" id="hero-search" placeholder="Search for workers, skills, or categories...">
-            <button onclick="heroSearch()">Search</button>
+        <div class="hero-content">
+            <h1>Hire Skilled Workers Instantly</h1>
+            <p>Find trusted professionals for design, construction, technology, and more. Browse categories or search for the perfect match.</p>
+            <div class="search-box">
+                <input type="text" id="hero-search" placeholder="Search for workers, skills, or categories...">
+                <button onclick="heroSearch()">Search</button>
+            </div>
         </div>
     </div>
 
@@ -114,9 +131,8 @@
             <!-- Filled by JS -->
         </div>
 
-        <div style="margin: 20px 0;">
+        <div class="search-input-wrapper">
             <input type="text" id="worker-search" placeholder="Search workers by name, skill, or description..."
-                   style="width:100%;padding:12px 16px;border:2px solid var(--gray-200);border-radius:8px;font-size:0.95rem;outline:none;"
                    oninput="searchWorkers()">
         </div>
 
