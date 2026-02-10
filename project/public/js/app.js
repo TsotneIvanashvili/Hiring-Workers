@@ -20,8 +20,17 @@ function getAvatarUrl(workerId) {
     return `https://i.pravatar.cc/150?img=${avatarNum}`;
 }
 
+// ─── Loading ───
+function showLoading() {
+    document.getElementById('loading-overlay').classList.remove('hidden');
+}
+
+function hideLoading() {
+    document.getElementById('loading-overlay').classList.add('hidden');
+}
+
 // ─── Init ───
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // Restore session from sessionStorage (tab-scoped, not localStorage)
     const savedToken = sessionStorage.getItem('token');
     const savedUser = sessionStorage.getItem('user');
@@ -29,10 +38,99 @@ document.addEventListener('DOMContentLoaded', () => {
         token = savedToken;
         currentUser = JSON.parse(savedUser);
         updateAuthUI();
+        fetchBalance();
     }
-    loadCategories();
-    loadTopWorkers();
+    await Promise.all([loadCategories(), loadTopWorkers()]);
+    hideLoading();
 });
+
+// ─── Balance ───
+function formatBalance(amount) {
+    return '$' + (amount || 0).toFixed(2);
+}
+
+function updateBalanceDisplay(balance) {
+    if (currentUser) {
+        currentUser.balance = balance;
+        sessionStorage.setItem('user', JSON.stringify(currentUser));
+    }
+    document.getElementById('balance-display').textContent = formatBalance(balance);
+    const statBalance = document.getElementById('stat-balance');
+    if (statBalance) statBalance.textContent = formatBalance(balance);
+    const fundsBalance = document.getElementById('funds-current-balance');
+    if (fundsBalance) fundsBalance.textContent = formatBalance(balance);
+}
+
+async function fetchBalance() {
+    if (!token) return;
+    try {
+        const res = await fetch(API + '/api/auth/balance', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            updateBalanceDisplay(data.balance);
+        }
+    } catch (err) {
+        console.error('Failed to fetch balance:', err);
+    }
+}
+
+// ─── Funds Modal ───
+function openFundsModal() {
+    if (!currentUser) {
+        navigate('auth');
+        showToast('Please log in to add funds', 'error');
+        return;
+    }
+    document.getElementById('funds-current-balance').textContent = formatBalance(currentUser.balance);
+    document.getElementById('funds-modal').classList.add('active');
+}
+
+function closeFundsModal() {
+    document.getElementById('funds-modal').classList.remove('active');
+    document.getElementById('funds-amount').value = '';
+}
+
+function setFundAmount(amount) {
+    document.getElementById('funds-amount').value = amount;
+}
+
+async function addFunds(e) {
+    e.preventDefault();
+    const amount = parseFloat(document.getElementById('funds-amount').value);
+
+    if (!amount || amount <= 0) {
+        showToast('Please enter a valid amount', 'error');
+        return;
+    }
+
+    showLoading();
+    try {
+        const res = await fetch(API + '/api/auth/add-funds', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({ amount })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            showToast(data.error, 'error');
+            return;
+        }
+
+        updateBalanceDisplay(data.balance);
+        closeFundsModal();
+        showToast(data.message, 'success');
+    } catch (err) {
+        showToast('Failed to add funds', 'error');
+    } finally {
+        hideLoading();
+    }
+}
 
 // ─── Navigation ───
 function navigate(page, extra) {
@@ -75,12 +173,14 @@ function updateAuthUI() {
         document.getElementById('nav-dashboard').style.display = 'block';
         document.getElementById('user-display').textContent = currentUser.username;
         document.getElementById('create-post-btn').style.display = 'block';
+        updateBalanceDisplay(currentUser.balance || 0);
     } else {
         document.getElementById('nav-auth').style.display = 'flex';
         document.getElementById('nav-user').style.display = 'none';
         document.getElementById('nav-dashboard').style.display = 'none';
         document.getElementById('user-display').textContent = '';
         document.getElementById('create-post-btn').style.display = 'none';
+        document.getElementById('balance-display').textContent = '$0.00';
     }
 }
 
@@ -110,6 +210,7 @@ async function handleLogin(e) {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
 
+    showLoading();
     try {
         const res = await fetch(API + '/api/auth/login', {
             method: 'POST',
@@ -132,6 +233,8 @@ async function handleLogin(e) {
         navigate('dashboard');
     } catch (err) {
         showAuthError('Connection error. Please try again.');
+    } finally {
+        hideLoading();
     }
 }
 
@@ -141,6 +244,7 @@ async function handleRegister(e) {
     const email = document.getElementById('reg-email').value;
     const password = document.getElementById('reg-password').value;
 
+    showLoading();
     try {
         const res = await fetch(API + '/api/auth/register', {
             method: 'POST',
@@ -163,6 +267,8 @@ async function handleRegister(e) {
         navigate('dashboard');
     } catch (err) {
         showAuthError('Connection error. Please try again.');
+    } finally {
+        hideLoading();
     }
 }
 
@@ -291,7 +397,7 @@ function renderWorkerCard(worker) {
     const initials = worker.name.split(' ').map(n => n[0]).join('').slice(0, 2);
     const avatarUrl = getAvatarUrl(worker.id);
     const hireBtn = currentUser
-        ? `<button class="btn btn-primary btn-sm" onclick="hireWorker(${worker.id}, '${worker.name.replace(/'/g, "\\'")}')">Hire</button>`
+        ? `<button class="btn btn-primary btn-sm" onclick="hireWorker(${worker.id}, '${worker.name.replace(/'/g, "\\'")}', ${worker.hourly_rate})">Hire ($${worker.hourly_rate})</button>`
         : `<button class="btn btn-outline btn-sm" onclick="navigate('auth')">Login to Hire</button>`;
 
     return `
@@ -318,13 +424,20 @@ function renderWorkerCard(worker) {
 }
 
 // ─── Hire Worker ───
-async function hireWorker(workerId, workerName) {
+async function hireWorker(workerId, workerName, hourlyRate) {
     if (!currentUser) {
         navigate('auth');
         showToast('Please log in to hire workers', 'error');
         return;
     }
 
+    // Client-side balance check
+    if ((currentUser.balance || 0) < hourlyRate) {
+        showToast(`Insufficient funds. You need $${hourlyRate.toFixed(2)}. Click your balance to add funds.`, 'error');
+        return;
+    }
+
+    showLoading();
     try {
         const res = await fetch(API + '/api/hires', {
             method: 'POST',
@@ -341,9 +454,15 @@ async function hireWorker(workerId, workerName) {
             return;
         }
 
+        // Update balance from server response
+        if (data.balance !== undefined) {
+            updateBalanceDisplay(data.balance);
+        }
         showToast(data.message, 'success');
     } catch (err) {
         showToast('Failed to hire worker', 'error');
+    } finally {
+        hideLoading();
     }
 }
 
@@ -354,7 +473,8 @@ async function loadDashboard() {
     try {
         const [hiresRes, postsRes] = await Promise.all([
             fetch(API + '/api/hires', { headers: { 'Authorization': 'Bearer ' + token } }),
-            fetch(API + '/api/posts')
+            fetch(API + '/api/posts'),
+            fetchBalance()
         ]);
 
         const hires = await hiresRes.json();
@@ -582,6 +702,9 @@ function closeMobileMenu() {
 document.addEventListener('click', (e) => {
     if (e.target.id === 'post-modal') {
         closePostModal();
+    }
+    if (e.target.id === 'funds-modal') {
+        closeFundsModal();
     }
 });
 

@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../db');
-const { JWT_SECRET } = require('../middleware/auth');
+const { JWT_SECRET, authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -29,7 +29,7 @@ router.post('/register', (req, res) => {
 
     const token = jwt.sign({ id: result.lastInsertRowid, username, email }, JWT_SECRET, { expiresIn: '7d' });
 
-    res.json({ token, user: { id: result.lastInsertRowid, username, email } });
+    res.json({ token, user: { id: result.lastInsertRowid, username, email, balance: 0 } });
 });
 
 // Login
@@ -52,7 +52,32 @@ router.post('/login', (req, res) => {
 
     const token = jwt.sign({ id: user.id, username: user.username, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
 
-    res.json({ token, user: { id: user.id, username: user.username, email: user.email } });
+    res.json({ token, user: { id: user.id, username: user.username, email: user.email, balance: user.balance || 0 } });
+});
+
+// Get balance
+router.get('/balance', authenticateToken, (req, res) => {
+    const user = db.prepare('SELECT balance FROM users WHERE id = ?').get(req.user.id);
+    if (!user) return res.status(404).json({ error: 'User not found.' });
+    res.json({ balance: user.balance || 0 });
+});
+
+// Add funds
+router.post('/add-funds', authenticateToken, (req, res) => {
+    const { amount } = req.body;
+
+    if (!amount || amount <= 0) {
+        return res.status(400).json({ error: 'Please enter a valid amount.' });
+    }
+
+    if (amount > 10000) {
+        return res.status(400).json({ error: 'Maximum deposit is $10,000 at a time.' });
+    }
+
+    db.prepare('UPDATE users SET balance = balance + ? WHERE id = ?').run(amount, req.user.id);
+    const user = db.prepare('SELECT balance FROM users WHERE id = ?').get(req.user.id);
+
+    res.json({ message: `$${amount.toFixed(2)} added to your account!`, balance: user.balance });
 });
 
 module.exports = router;

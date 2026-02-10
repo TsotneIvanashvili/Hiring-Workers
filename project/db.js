@@ -13,6 +13,7 @@ db.exec(`
         username TEXT UNIQUE NOT NULL,
         email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
+        balance REAL DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -49,6 +50,13 @@ db.exec(`
         FOREIGN KEY (worker_id) REFERENCES workers(id)
     );
 `);
+
+// Add balance column if missing (migration for existing DBs)
+try {
+    db.prepare('SELECT balance FROM users LIMIT 1').get();
+} catch {
+    db.exec('ALTER TABLE users ADD COLUMN balance REAL DEFAULT 0');
+}
 
 // Seed workers if table is empty
 const workerCount = db.prepare('SELECT COUNT(*) as count FROM workers').get();

@@ -10,7 +10,10 @@
       "Bash(git rm:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(if exist hirework.db del hirework.db)",
+      "Bash(Remove-Item -ErrorAction SilentlyContinue \"c:\\\\Users\\\\Administrator\\\\Documents\\\\GitHub\\\\Hiring-Workers\\\\project\\\\hirework.db\")",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJ0ZXN0dXNlciIsImVtYWlsIjoidGVzdEB0ZXN0LmNvbSIsImlhdCI6MTc3MDczNDAzOCwiZXhwIjoxNzcxMzM4ODM4fQ.Au6updn0h1mTgP4L0TlZAWYi-WTzIza6kLMOYxbGuyI\")"
     ]
   }
 }

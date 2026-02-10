@@ -40,11 +40,31 @@ router.post('/', authenticateToken, (req, res) => {
         return res.status(400).json({ error: 'You have already hired this worker.' });
     }
 
-    const result = db.prepare(
-        'INSERT INTO hires (user_id, worker_id) VALUES (?, ?)'
-    ).run(req.user.id, worker_id);
+    // Check user balance
+    const user = db.prepare('SELECT balance FROM users WHERE id = ?').get(req.user.id);
+    if ((user.balance || 0) < worker.hourly_rate) {
+        return res.status(400).json({
+            error: `Insufficient funds. You need $${worker.hourly_rate.toFixed(2)} but have $${(user.balance || 0).toFixed(2)}. Please add funds first.`
+        });
+    }
 
-    res.json({ message: `Successfully hired ${worker.name}!`, hire_id: result.lastInsertRowid });
+    // Deduct funds and create hire
+    const hireTransaction = db.transaction(() => {
+        db.prepare('UPDATE users SET balance = balance - ? WHERE id = ?').run(worker.hourly_rate, req.user.id);
+        const result = db.prepare(
+            'INSERT INTO hires (user_id, worker_id) VALUES (?, ?)'
+        ).run(req.user.id, worker_id);
+        return result;
+    });
+
+    const result = hireTransaction();
+    const updatedUser = db.prepare('SELECT balance FROM users WHERE id = ?').get(req.user.id);
+
+    res.json({
+        message: `Successfully hired ${worker.name}! $${worker.hourly_rate.toFixed(2)} deducted.`,
+        hire_id: result.lastInsertRowid,
+        balance: updatedUser.balance
+    });
 });
 
 // End a hire

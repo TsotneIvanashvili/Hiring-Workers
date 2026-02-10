@@ -11,6 +11,14 @@
 </head>
 <body>
 
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loading-overlay">
+    <div class="loader">
+        <div class="loader-spinner"></div>
+        <p class="loader-text">Loading...</p>
+    </div>
+</div>
+
 <!-- Navbar -->
 <nav class="navbar">
     <div class="nav-brand" onclick="navigate('home')">HireWork <span>PRO</span></div>
@@ -33,6 +41,7 @@
             <button class="btn btn-primary btn-sm" onclick="navigate('auth', 'register'); closeMobileMenu()">Sign Up</button>
         </div>
         <div class="nav-auth" id="nav-user" style="display:none;">
+            <button class="balance-badge" id="balance-display" onclick="openFundsModal(); closeMobileMenu()">$0.00</button>
             <span class="user-badge" id="user-display"></span>
             <button class="btn btn-outline btn-sm" onclick="logout(); closeMobileMenu()">Log Out</button>
         </div>
@@ -188,6 +197,11 @@
                 <div class="stat-number" id="stat-posts">0</div>
                 <div class="stat-label">Your Posts</div>
             </div>
+            <div class="stat-card stat-card-balance" onclick="openFundsModal()">
+                <div class="stat-number" id="stat-balance">$0.00</div>
+                <div class="stat-label">Balance</div>
+                <div class="stat-action">+ Add Funds</div>
+            </div>
         </div>
 
         <h2 class="section-title">Recent Hires</h2>
@@ -229,8 +243,73 @@
     </div>
 </div>
 
+<!-- ═══════════════ ADD FUNDS MODAL ═══════════════ -->
+<div class="modal-overlay" id="funds-modal">
+    <div class="modal">
+        <h2>Add Funds</h2>
+        <p class="funds-balance">Current balance: <strong id="funds-current-balance">$0.00</strong></p>
+        <form onsubmit="addFunds(event)">
+            <div class="form-group">
+                <label>Amount ($)</label>
+                <input type="number" id="funds-amount" placeholder="Enter amount" min="1" max="10000" step="0.01" required>
+            </div>
+            <div class="quick-amounts">
+                <button type="button" class="quick-amount-btn" onclick="setFundAmount(25)">$25</button>
+                <button type="button" class="quick-amount-btn" onclick="setFundAmount(50)">$50</button>
+                <button type="button" class="quick-amount-btn" onclick="setFundAmount(100)">$100</button>
+                <button type="button" class="quick-amount-btn" onclick="setFundAmount(500)">$500</button>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeFundsModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary">Add Funds</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast"></div>
+
+<!-- Footer -->
+<footer class="footer" id="site-footer">
+    <div class="footer-inner">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <div class="footer-brand">HireWork <span>PRO</span></div>
+                <p class="footer-desc">Find trusted professionals for any project. Quality work, fair prices, instant hiring.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a onclick="navigate('home')">Home</a></li>
+                    <li><a onclick="navigate('workers')">Browse Workers</a></li>
+                    <li><a onclick="navigate('posts')">Community Posts</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Categories</h4>
+                <ul>
+                    <li><a onclick="navigate('workers'); filterWorkers('Design')">Design</a></li>
+                    <li><a onclick="navigate('workers'); filterWorkers('Technology')">Technology</a></li>
+                    <li><a onclick="navigate('workers'); filterWorkers('Construction')">Construction</a></li>
+                    <li><a onclick="navigate('workers'); filterWorkers('Cleaning')">Cleaning</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Support</h4>
+                <ul>
+                    <li><a>Help Center</a></li>
+                    <li><a>Terms of Service</a></li>
+                    <li><a>Privacy Policy</a></li>
+                    <li><a>Contact Us</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 HireWork PRO. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
 
 <script src="/js/app.js"></script>
 </body>

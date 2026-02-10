@@ -1069,6 +1069,212 @@ body {
 .toast.success { background: var(--forest); }
 .toast.error { background: var(--danger); }
 
+/* ─── Loading Overlay ─── */
+.loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--cream);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+.loading-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.loader {
+    text-align: center;
+}
+
+.loader-spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid var(--gray-200);
+    border-top: 3px solid var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loader-text {
+    font-family: var(--font-heading);
+    font-size: 1.1rem;
+    color: var(--taupe);
+    letter-spacing: 0.5px;
+}
+
+/* ─── Balance Badge (navbar) ─── */
+.balance-badge {
+    background: rgba(176, 141, 87, 0.15);
+    color: var(--accent);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    border: 1px solid rgba(176, 141, 87, 0.3);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font-body);
+}
+
+.balance-badge:hover {
+    background: rgba(176, 141, 87, 0.25);
+    border-color: var(--accent);
+}
+
+/* ─── Balance Stat Card ─── */
+.stat-card-balance {
+    cursor: pointer;
+    border-color: var(--accent);
+    position: relative;
+}
+
+.stat-card-balance:hover {
+    background: var(--accent-light);
+}
+
+.stat-action {
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.82rem;
+    margin-top: 8px;
+    letter-spacing: 0.3px;
+}
+
+/* ─── Funds Modal Extras ─── */
+.funds-balance {
+    color: var(--taupe);
+    margin-bottom: 24px;
+    font-size: 0.95rem;
+}
+
+.funds-balance strong {
+    color: var(--accent);
+    font-size: 1.1rem;
+}
+
+.quick-amounts {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.quick-amount-btn {
+    flex: 1;
+    min-width: 60px;
+    padding: 10px 8px;
+    border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius);
+    background: white;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--gray-700);
+    transition: all 0.2s;
+    font-family: var(--font-body);
+}
+
+.quick-amount-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent-dark);
+    background: var(--accent-light);
+}
+
+/* ─── Footer ─── */
+.footer {
+    background: var(--primary);
+    color: rgba(255, 255, 255, 0.7);
+    padding: 56px 0 0;
+    margin-top: 0;
+}
+
+.footer-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 40px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-brand {
+    font-family: var(--font-heading);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.footer-brand span {
+    background: var(--accent);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: var(--font-body);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+}
+
+.footer-desc {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    max-width: 280px;
+}
+
+.footer-col h4 {
+    color: #FFFFFF;
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.footer-col ul {
+    list-style: none;
+}
+
+.footer-col ul li {
+    margin-bottom: 8px;
+}
+
+.footer-col ul li a {
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    font-size: 0.88rem;
+    transition: color 0.2s;
+    cursor: pointer;
+}
+
+.footer-col ul li a:hover {
+    color: var(--accent);
+}
+
+.footer-bottom {
+    padding: 24px 0;
+    text-align: center;
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.4);
+}
+
 /* ═══════════════════════════════════════════
    RESPONSIVE
    ═══════════════════════════════════════════ */
@@ -1283,6 +1489,27 @@ body {
         bottom: 16px;
         text-align: center;
     }
+
+    .balance-badge {
+        width: 100%;
+        text-align: center;
+        padding: 12px;
+        font-size: 0.9rem;
+    }
+
+    .footer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 32px;
+    }
+
+    .footer-desc {
+        max-width: 100%;
+    }
+
+    .quick-amounts {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+    }
 }
 
 /* Small phones */
@@ -1313,5 +1540,14 @@ body {
     .worker-meta .btn {
         width: 100%;
         justify-content: center;
+    }
+
+    .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 28px;
+    }
+
+    .quick-amounts {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
