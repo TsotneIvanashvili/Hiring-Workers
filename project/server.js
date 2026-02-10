@@ -28,3 +28,8 @@ app.get('/{path}', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
 });
+
+
+
+
+// now i want you to make a better posting page maybe use facebook as reference post should be just like its on facebook and people should be able to add reactions and also comment on other peoples post and theres an issue when user is not logged in the hire button is invisible instead it should say Log In To Hire
