@@ -1,48 +1,55 @@
 const express = require('express');
-const db = require('../db');
+const Worker = require('../models/Worker');
 
 const router = express.Router();
 
 // Get all workers or filter by category
-router.get('/', (req, res) => {
-    const { category, search } = req.query;
+router.get('/', async (req, res) => {
+    try {
+        const { category, search } = req.query;
+        let query = {};
 
-    let query = 'SELECT * FROM workers';
-    const params = [];
-    const conditions = [];
+        if (category && category !== 'All') {
+            query.category = category;
+        }
 
-    if (category && category !== 'All') {
-        conditions.push('category = ?');
-        params.push(category);
+        if (search) {
+            query.$or = [
+                { name: { $regex: search, $options: 'i' } },
+                { description: { $regex: search, $options: 'i' } },
+                { category: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        const workers = await Worker.find(query).sort({ rating: -1 });
+        res.json(workers);
+    } catch (error) {
+        console.error('Get workers error:', error);
+        res.status(500).json({ error: 'Server error. Please try again.' });
     }
-
-    if (search) {
-        conditions.push('(name LIKE ? OR description LIKE ? OR category LIKE ?)');
-        const searchTerm = `%${search}%`;
-        params.push(searchTerm, searchTerm, searchTerm);
-    }
-
-    if (conditions.length > 0) {
-        query += ' WHERE ' + conditions.join(' AND ');
-    }
-
-    query += ' ORDER BY rating DESC';
-
-    const workers = db.prepare(query).all(...params);
-    res.json(workers);
 });
 
 // Get categories
-router.get('/categories', (req, res) => {
-    const categories = db.prepare('SELECT DISTINCT category FROM workers ORDER BY category').all();
-    res.json(categories.map(c => c.category));
+router.get('/categories', async (req, res) => {
+    try {
+        const categories = await Worker.distinct('category');
+        res.json(categories.sort());
+    } catch (error) {
+        console.error('Get categories error:', error);
+        res.status(500).json({ error: 'Server error. Please try again.' });
+    }
 });
 
 // Get single worker
-router.get('/:id', (req, res) => {
-    const worker = db.prepare('SELECT * FROM workers WHERE id = ?').get(req.params.id);
-    if (!worker) return res.status(404).json({ error: 'Worker not found.' });
-    res.json(worker);
+router.get('/:id', async (req, res) => {
+    try {
+        const worker = await Worker.findById(req.params.id);
+        if (!worker) return res.status(404).json({ error: 'Worker not found.' });
+        res.json(worker);
+    } catch (error) {
+        console.error('Get worker error:', error);
+        res.status(500).json({ error: 'Server error. Please try again.' });
+    }
 });
 
 module.exports = router;

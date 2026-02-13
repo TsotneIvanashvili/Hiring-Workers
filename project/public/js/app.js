@@ -189,18 +189,26 @@ function switchAuthTab(tab) {
     document.getElementById('auth-error').style.display = 'none';
     document.getElementById('auth-success').style.display = 'none';
 
+    document.getElementById('login-form').style.display = 'none';
+    document.getElementById('register-form').style.display = 'none';
+    const changePasswordForm = document.getElementById('change-password-form');
+    if (changePasswordForm) changePasswordForm.style.display = 'none';
+
     if (tab === 'login') {
         document.querySelectorAll('.auth-tab')[0].classList.add('active');
         document.getElementById('login-form').style.display = 'block';
-        document.getElementById('register-form').style.display = 'none';
         document.getElementById('auth-title').textContent = 'Welcome Back';
         document.getElementById('auth-subtitle').textContent = 'Log in to your account';
-    } else {
+    } else if (tab === 'register') {
         document.querySelectorAll('.auth-tab')[1].classList.add('active');
-        document.getElementById('login-form').style.display = 'none';
         document.getElementById('register-form').style.display = 'block';
         document.getElementById('auth-title').textContent = 'Create Account';
         document.getElementById('auth-subtitle').textContent = 'Sign up to start hiring';
+    } else if (tab === 'change-password') {
+        document.querySelectorAll('.auth-tab')[2].classList.add('active');
+        if (changePasswordForm) changePasswordForm.style.display = 'block';
+        document.getElementById('auth-title').textContent = 'Change Password';
+        document.getElementById('auth-subtitle').textContent = 'Reset your account password';
     }
 }
 
@@ -243,13 +251,17 @@ async function handleRegister(e) {
     const username = document.getElementById('reg-username').value;
     const email = document.getElementById('reg-email').value;
     const password = document.getElementById('reg-password').value;
+    const age = document.getElementById('reg-age').value;
 
     showLoading();
     try {
+        const body = { username, email, password };
+        if (age) body.age = parseInt(age);
+
         const res = await fetch(API + '/api/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, email, password })
+            body: JSON.stringify(body)
         });
         const data = await res.json();
 
@@ -272,6 +284,42 @@ async function handleRegister(e) {
     }
 }
 
+async function handleChangePassword(e) {
+    e.preventDefault();
+    const email = document.getElementById('change-email').value;
+    const newPassword = document.getElementById('change-new-password').value;
+    const confirmPassword = document.getElementById('change-confirm-password').value;
+
+    if (newPassword !== confirmPassword) {
+        showAuthError('Passwords do not match');
+        return;
+    }
+
+    showLoading();
+    try {
+        const res = await fetch(API + '/api/auth/change-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, newPassword })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            showAuthError(data.error);
+            return;
+        }
+
+        showAuthSuccess(data.message);
+        setTimeout(() => {
+            switchAuthTab('login');
+        }, 2000);
+    } catch (err) {
+        showAuthError('Connection error. Please try again.');
+    } finally {
+        hideLoading();
+    }
+}
+
 function logout() {
     token = null;
     currentUser = null;
@@ -284,6 +332,12 @@ function logout() {
 
 function showAuthError(msg) {
     const el = document.getElementById('auth-error');
+    el.textContent = msg;
+    el.style.display = 'block';
+}
+
+function showAuthSuccess(msg) {
+    const el = document.getElementById('auth-success');
     el.textContent = msg;
     el.style.display = 'block';
 }

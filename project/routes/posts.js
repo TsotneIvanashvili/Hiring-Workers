@@ -1,45 +1,66 @@
 const express = require('express');
-const db = require('../db');
+const Post = require('../models/Post');
 const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
 // Get all posts (public)
-router.get('/', (req, res) => {
-    const { category } = req.query;
-    let posts;
-    if (category && category !== 'All') {
-        posts = db.prepare('SELECT * FROM posts WHERE category = ? ORDER BY created_at DESC').all(category);
-    } else {
-        posts = db.prepare('SELECT * FROM posts ORDER BY created_at DESC').all();
+router.get('/', async (req, res) => {
+    try {
+        const { category } = req.query;
+        let posts;
+
+        if (category && category !== 'All') {
+            posts = await Post.find({ category }).sort({ created_at: -1 });
+        } else {
+            posts = await Post.find().sort({ created_at: -1 });
+        }
+
+        res.json(posts);
+    } catch (error) {
+        console.error('Get posts error:', error);
+        res.status(500).json({ error: 'Server error. Please try again.' });
     }
-    res.json(posts);
 });
 
 // Create a post (authenticated)
-router.post('/', authenticateToken, (req, res) => {
-    const { title, content, category } = req.body;
+router.post('/', authenticateToken, async (req, res) => {
+    try {
+        const { title, content, category } = req.body;
 
-    if (!title || !content) {
-        return res.status(400).json({ error: 'Title and content are required.' });
+        if (!title || !content) {
+            return res.status(400).json({ error: 'Title and content are required.' });
+        }
+
+        const post = new Post({
+            user_id: req.user.id,
+            username: req.user.username,
+            title,
+            content,
+            category: category || 'General'
+        });
+
+        await post.save();
+        res.json(post);
+    } catch (error) {
+        console.error('Create post error:', error);
+        res.status(500).json({ error: 'Server error. Please try again.' });
     }
-
-    const result = db.prepare(
-        'INSERT INTO posts (user_id, username, title, content, category) VALUES (?, ?, ?, ?, ?)'
-    ).run(req.user.id, req.user.username, title, content, category || 'General');
-
-    const post = db.prepare('SELECT * FROM posts WHERE id = ?').get(result.lastInsertRowid);
-    res.json(post);
 });
 
 // Delete a post (only by owner)
-router.delete('/:id', authenticateToken, (req, res) => {
-    const post = db.prepare('SELECT * FROM posts WHERE id = ?').get(req.params.id);
-    if (!post) return res.status(404).json({ error: 'Post not found.' });
-    if (post.user_id !== req.user.id) return res.status(403).json({ error: 'Not authorized.' });
+router.delete('/:id', authenticateToken, async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id);
+        if (!post) return res.status(404).json({ error: 'Post not found.' });
+        if (post.user_id.toString() !== req.user.id) return res.status(403).json({ error: 'Not authorized.' });
 
-    db.prepare('DELETE FROM posts WHERE id = ?').run(req.params.id);
-    res.json({ message: 'Post deleted.' });
+        await Post.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Post deleted.' });
+    } catch (error) {
+        console.error('Delete post error:', error);
+        res.status(500).json({ error: 'Server error. Please try again.' });
+    }
 });
 
 module.exports = router;
