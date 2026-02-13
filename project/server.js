@@ -43,9 +43,14 @@ app.use('/api/posts', postRoutes);
 app.use('/api/hires', hireRoutes);
 app.use('/api/workers', workerRoutes);
 
-// Serve frontend pages (catch-all route)
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// Serve frontend pages (SPA fallback - Express 5.x compatible)
+app.use((req, res, next) => {
+    // If request is not for API and file doesn't exist, serve index.html
+    if (!req.path.startsWith('/api/')) {
+        res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    } else {
+        next();
+    }
 });
 
 // Export for Vercel serverless
