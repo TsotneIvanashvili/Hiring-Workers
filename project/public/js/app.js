@@ -16,7 +16,15 @@ const categoryData = {
 
 // Map worker IDs to avatar numbers (i.pravatar.cc supports img=1 through 70)
 function getAvatarUrl(workerId) {
-    const avatarNum = ((workerId - 1) % 70) + 1;
+    // Handle both MongoDB ObjectId (string) and old integer IDs
+    let numericId;
+    if (typeof workerId === 'string') {
+        // Convert MongoDB ObjectId string to a number using character codes
+        numericId = workerId.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
+    } else {
+        numericId = workerId;
+    }
+    const avatarNum = ((numericId - 1) % 70) + 1;
     return `https://i.pravatar.cc/150?img=${avatarNum}`;
 }
 
@@ -448,10 +456,11 @@ function heroSearch() {
 }
 
 function renderWorkerCard(worker) {
+    const workerId = worker._id || worker.id; // MongoDB uses _id
     const initials = worker.name.split(' ').map(n => n[0]).join('').slice(0, 2);
-    const avatarUrl = getAvatarUrl(worker.id);
+    const avatarUrl = getAvatarUrl(workerId);
     const hireBtn = currentUser
-        ? `<button class="btn btn-primary btn-sm" onclick="hireWorker(${worker.id}, '${worker.name.replace(/'/g, "\\'")}', ${worker.hourly_rate})">Hire ($${worker.hourly_rate})</button>`
+        ? `<button class="btn btn-primary btn-sm" onclick="hireWorker('${workerId}', '${worker.name.replace(/'/g, "\\'")}', ${worker.hourly_rate})">Hire ($${worker.hourly_rate})</button>`
         : `<button class="btn btn-outline btn-sm" onclick="navigate('auth')">Login to Hire</button>`;
 
     return `
