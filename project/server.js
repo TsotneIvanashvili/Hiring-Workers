@@ -44,7 +44,7 @@ app.use('/api/hires', hireRoutes);
 app.use('/api/workers', workerRoutes);
 
 // Serve frontend pages (catch-all route)
-app.get('/*', (req, res) => {
+app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
