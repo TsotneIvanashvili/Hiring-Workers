@@ -9,25 +9,28 @@ const router = express.Router();
 // Register
 router.post('/register', async (req, res) => {
     try {
-        const { username, email, password, age } = req.body;
+        const { username, name, email, password, age } = req.body;
 
-        if (!username || !email || !password) {
-            return res.status(400).json({ error: 'Username, email, and password are required.' });
+        const displayName = name || username;
+
+        if (!displayName || !email || !password) {
+            return res.status(400).json({ error: 'Name, email, and password are required.' });
         }
 
         if (password.length < 6) {
             return res.status(400).json({ error: 'Password must be at least 6 characters.' });
         }
 
-        const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+        const existingUser = await User.findOne({ $or: [{ email }, { username: displayName }] });
         if (existingUser) {
-            return res.status(400).json({ error: 'Username or email already exists.' });
+            return res.status(400).json({ error: 'Email already exists.' });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const user = new User({
-            username,
+            name: displayName,
+            username: username || displayName,
             email,
             password: hashedPassword,
             age: age || undefined
@@ -35,13 +38,14 @@ router.post('/register', async (req, res) => {
 
         await user.save();
 
-        const token = jwt.sign({ id: user._id, username: user.username, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+        const token = jwt.sign({ id: user._id, username: user.name || user.username, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
 
         res.json({
             token,
             user: {
                 id: user._id,
-                username: user.username,
+                name: user.name,
+                username: user.username || user.name,
                 email: user.email,
                 age: user.age,
                 balance: user.balance
@@ -78,7 +82,8 @@ router.post('/login', async (req, res) => {
             token,
             user: {
                 id: user._id,
-                username: user.username,
+                name: user.name,
+                username: user.username || user.name,
                 email: user.email,
                 age: user.age,
                 balance: user.balance

@@ -256,6 +256,7 @@ async function handleLogin(e) {
 
 async function handleRegister(e) {
     e.preventDefault();
+    const name = document.getElementById('reg-name').value;
     const username = document.getElementById('reg-username').value;
     const email = document.getElementById('reg-email').value;
     const password = document.getElementById('reg-password').value;
@@ -263,7 +264,7 @@ async function handleRegister(e) {
 
     showLoading();
     try {
-        const body = { username, email, password };
+        const body = { name, username, email, password };
         if (age) body.age = parseInt(age);
 
         const res = await fetch(API + '/api/auth/register', {

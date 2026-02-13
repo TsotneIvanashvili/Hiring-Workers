@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Worker = require('./models/Worker');
 
 // MongoDB connection string - update with your MongoDB URI
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/hirework';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/userInfo';
 
 // Check if MONGODB_URI is set
 if (!process.env.MONGODB_URI && process.env.VERCEL) {

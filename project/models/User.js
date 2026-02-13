@@ -1,10 +1,16 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-    username: {
+    name: {
         type: String,
         required: true,
+        trim: true
+    },
+    username: {
+        type: String,
+        required: false,
         unique: true,
+        sparse: true,
         trim: true
     },
     email: {
@@ -16,7 +22,7 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true
+        required: false
     },
     age: {
         type: Number,
@@ -30,6 +36,8 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     }
+}, {
+    collection: 'Users'  // Use 'Users' collection in userInfo database
 });
 
 module.exports = mongoose.model('User', userSchema);
