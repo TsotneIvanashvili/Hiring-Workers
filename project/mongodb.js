@@ -4,32 +4,39 @@ const Worker = require('./models/Worker');
 // MongoDB connection string - update with your MongoDB URI
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/hirework';
 
-let isConnected = false;
+// Check if MONGODB_URI is set
+if (!process.env.MONGODB_URI && process.env.VERCEL) {
+    console.error('⚠️ MONGODB_URI environment variable is not set!');
+}
 
 const connectDB = async () => {
     // Reuse existing connection for serverless
-    if (isConnected) {
-        console.log('Using existing MongoDB connection');
+    if (mongoose.connection.readyState >= 1) {
+        console.log('✅ Using existing MongoDB connection');
         return;
     }
 
     try {
-        await mongoose.connect(MONGODB_URI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-            serverSelectionTimeoutMS: 5000,
+        const conn = await mongoose.connect(MONGODB_URI, {
+            bufferCommands: false,
+            maxPoolSize: 10,
+            serverSelectionTimeoutMS: 10000,
+            socketTimeoutMS: 45000,
         });
 
-        isConnected = true;
-        console.log('✅ MongoDB connected successfully');
+        console.log('✅ MongoDB connected:', conn.connection.host);
 
-        // Seed workers if collection is empty
-        await seedWorkers();
-    } catch (error) {
-        console.error('❌ MongoDB connection error:', error);
-        if (!process.env.VERCEL) {
-            process.exit(1);
+        // Seed workers in background (don't wait for it in serverless)
+        if (process.env.VERCEL) {
+            seedWorkers().catch(err => console.error('Seed error:', err));
+        } else {
+            await seedWorkers();
         }
+
+        return conn;
+    } catch (error) {
+        console.error('❌ MongoDB connection error:', error.message);
+        throw error;
     }
 };
 

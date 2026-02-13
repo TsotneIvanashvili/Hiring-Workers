@@ -10,12 +10,32 @@ const workerRoutes = require('./routes/workers');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Connect to MongoDB
-connectDB();
+// Middleware for DB connection on each request (for serverless)
+app.use(async (req, res, next) => {
+    try {
+        await connectDB();
+        next();
+    } catch (error) {
+        console.error('Database connection failed:', error);
+        if (req.path.startsWith('/api/')) {
+            return res.status(500).json({ error: 'Database connection failed' });
+        }
+        next();
+    }
+});
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+    res.json({
+        status: 'ok',
+        mongodb: process.env.MONGODB_URI ? 'configured' : 'not configured',
+        environment: process.env.VERCEL ? 'vercel' : 'local'
+    });
+});
 
 // API routes
 app.use('/api/auth', authRoutes);
