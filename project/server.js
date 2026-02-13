@@ -8,7 +8,7 @@ const hireRoutes = require('./routes/hires');
 const workerRoutes = require('./routes/workers');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Connect to MongoDB
 connectDB();
@@ -23,14 +23,20 @@ app.use('/api/posts', postRoutes);
 app.use('/api/hires', hireRoutes);
 app.use('/api/workers', workerRoutes);
 
-// Serve frontend pages
-app.get('/{path}', (req, res) => {
+// Serve frontend pages (catch-all route)
+app.get('/*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
-});
+// Export for Vercel serverless
+module.exports = app;
+
+// Start server locally if not on Vercel
+if (!process.env.VERCEL) {
+    app.listen(PORT, () => {
+        console.log(`Server running at http://localhost:${PORT}`);
+    });
+}
 
 
 

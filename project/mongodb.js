@@ -4,16 +4,32 @@ const Worker = require('./models/Worker');
 // MongoDB connection string - update with your MongoDB URI
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/hirework';
 
+let isConnected = false;
+
 const connectDB = async () => {
+    // Reuse existing connection for serverless
+    if (isConnected) {
+        console.log('Using existing MongoDB connection');
+        return;
+    }
+
     try {
-        await mongoose.connect(MONGODB_URI);
+        await mongoose.connect(MONGODB_URI, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            serverSelectionTimeoutMS: 5000,
+        });
+
+        isConnected = true;
         console.log('✅ MongoDB connected successfully');
 
         // Seed workers if collection is empty
         await seedWorkers();
     } catch (error) {
         console.error('❌ MongoDB connection error:', error);
-        process.exit(1);
+        if (!process.env.VERCEL) {
+            process.exit(1);
+        }
     }
 };
 
