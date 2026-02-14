@@ -3,6 +3,22 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { protect } = require('../middleware/auth');
+const MAX_AVATAR_SIZE_CHARS = 5 * 1024 * 1024;
+const HTTP_IMAGE_URL_PATTERN = /^https?:\/\/\S+$/i;
+const DATA_IMAGE_URL_PATTERN = /^data:image\/[a-zA-Z0-9.+-]+;base64,/;
+
+function isValidAvatar(avatar) {
+    if (!avatar || typeof avatar !== 'string') {
+        return false;
+    }
+
+    const value = avatar.trim();
+    if (!value || value.length > MAX_AVATAR_SIZE_CHARS) {
+        return false;
+    }
+
+    return HTTP_IMAGE_URL_PATTERN.test(value) || DATA_IMAGE_URL_PATTERN.test(value);
+}
 
 // Generate JWT Token
 const generateToken = (id) => {
@@ -16,7 +32,8 @@ const generateToken = (id) => {
 // @access  Public
 router.post('/register', async (req, res) => {
     try {
-        const { name, email, password, phone, age } = req.body;
+        const { name, email, password, phone, age, avatar } = req.body;
+        const trimmedAvatar = typeof avatar === 'string' ? avatar.trim() : '';
 
         // Check if user exists
         const existingUser = await User.findOne({ email });
@@ -27,14 +44,27 @@ router.post('/register', async (req, res) => {
             });
         }
 
+        if (trimmedAvatar && !isValidAvatar(trimmedAvatar)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Avatar must be a valid image URL or uploaded image data'
+            });
+        }
+
         // Create user
-        const user = await User.create({
+        const userPayload = {
             name,
             email,
             password,
             phone,
             age
-        });
+        };
+
+        if (trimmedAvatar) {
+            userPayload.avatar = trimmedAvatar;
+        }
+
+        const user = await User.create(userPayload);
 
         const token = generateToken(user._id);
 
@@ -45,6 +75,7 @@ router.post('/register', async (req, res) => {
                 id: user._id,
                 name: user.name,
                 email: user.email,
+                avatar: user.avatar,
                 balance: user.balance
             }
         });
@@ -101,6 +132,7 @@ router.post('/login', async (req, res) => {
                 id: user._id,
                 name: user.name,
                 email: user.email,
+                avatar: user.avatar,
                 balance: user.balance
             }
         });
@@ -124,6 +156,7 @@ router.get('/me', protect, async (req, res) => {
             id: req.user._id,
             name: req.user.name,
             email: req.user.email,
+            avatar: req.user.avatar,
             balance: req.user.balance,
             phone: req.user.phone,
             age: req.user.age

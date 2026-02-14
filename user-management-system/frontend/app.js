@@ -30,6 +30,7 @@ function setupEventListeners() {
     document.getElementById('register-form')?.addEventListener('submit', handleRegister);
     document.getElementById('funds-form')?.addEventListener('submit', handleAddFunds);
     document.getElementById('feedback-form')?.addEventListener('submit', handleCreateFeedback);
+    setupFileInputs();
 }
 
 // ============================================
@@ -104,12 +105,31 @@ async function handleRegister(e) {
     const name = document.getElementById('register-name').value;
     const email = document.getElementById('register-email').value;
     const password = document.getElementById('register-password').value;
+    const avatarInputEl = document.getElementById('register-avatar');
+    const selectedAvatar = avatarInputEl?.files?.[0];
+
+    if (selectedAvatar && !selectedAvatar.type.startsWith('image/')) {
+        showAuthError('Please select a valid image file for your profile photo');
+        setButtonLoading(btn, false);
+        return;
+    }
+
+    if (selectedAvatar && selectedAvatar.size > 3 * 1024 * 1024) {
+        showAuthError('Profile photo must be 3MB or smaller');
+        setButtonLoading(btn, false);
+        return;
+    }
 
     try {
+        let avatarPayload = '';
+        if (selectedAvatar) {
+            avatarPayload = await readFileAsDataUrl(selectedAvatar);
+        }
+
         const res = await fetch(`${API_URL}/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email, password })
+            body: JSON.stringify({ name, email, password, avatar: avatarPayload })
         });
 
         const data = await res.json();
@@ -230,17 +250,19 @@ function navigate(page) {
 
 function updateUserDisplay() {
     if (!currentUser) return;
-    const firstName = currentUser.name.split(' ')[0];
-    const initial = firstName.charAt(0).toUpperCase();
+    const safeName = currentUser.name || 'User';
+    const firstName = safeName.split(' ')[0];
+    const initial = firstName.charAt(0).toUpperCase() || 'U';
+    const avatar = typeof currentUser.avatar === 'string' ? currentUser.avatar.trim() : '';
 
-    document.getElementById('user-name-display').textContent = firstName;
-    document.getElementById('user-avatar').textContent = initial;
-
-    const profileAvatarEl = document.getElementById('profile-avatar');
-    if (profileAvatarEl) profileAvatarEl.textContent = initial;
+    const userNameDisplayEl = document.getElementById('user-name-display');
+    if (userNameDisplayEl) userNameDisplayEl.textContent = firstName;
+    setAvatarChip('user-avatar', avatar, initial);
+    setAvatarChip('profile-avatar', avatar, initial);
+    setAvatarChip('home-profile-avatar', avatar, initial);
 
     const profileNameEl = document.getElementById('profile-name');
-    if (profileNameEl) profileNameEl.textContent = currentUser.name;
+    if (profileNameEl) profileNameEl.textContent = safeName;
 
     const profileEmailEl = document.getElementById('profile-email');
     if (profileEmailEl) profileEmailEl.textContent = currentUser.email;
@@ -248,11 +270,8 @@ function updateUserDisplay() {
     const profileIdEl = document.getElementById('profile-id');
     if (profileIdEl) profileIdEl.textContent = currentUser.id || '-';
 
-    const homeProfileAvatarEl = document.getElementById('home-profile-avatar');
-    if (homeProfileAvatarEl) homeProfileAvatarEl.textContent = initial;
-
     const homeProfileNameEl = document.getElementById('home-profile-name');
-    if (homeProfileNameEl) homeProfileNameEl.textContent = currentUser.name;
+    if (homeProfileNameEl) homeProfileNameEl.textContent = safeName;
 
     const homeProfileEmailEl = document.getElementById('home-profile-email');
     if (homeProfileEmailEl) homeProfileEmailEl.textContent = currentUser.email;
@@ -627,7 +646,10 @@ async function handleCreateFeedback(e) {
         }
 
         contentEl.value = '';
-        if (imageInputEl) imageInputEl.value = '';
+        if (imageInputEl) {
+            imageInputEl.value = '';
+            updateFileInputLabel(imageInputEl);
+        }
         showToast('Post published', 'success');
         loadFeedback();
     } catch (error) {
@@ -727,7 +749,7 @@ function renderFeedbackPost(post) {
     const likes = Array.isArray(post.likes) ? post.likes : [];
     const comments = Array.isArray(post.comments) ? post.comments : [];
     const userLiked = likes.some((likeId) => String(likeId) === String(currentUser?.id));
-    const authorAvatar = getAvatarUrl(author);
+    const authorAvatar = getAvatarUrl(author, post.userId?.avatar);
     const postOwnerId = typeof post.userId === 'object' && post.userId
         ? (post.userId._id || post.userId.id)
         : post.userId;
@@ -775,7 +797,7 @@ function renderFeedbackPost(post) {
                         <div class="feedback-comment">
                             <img
                                 class="feedback-comment-avatar"
-                                src="${escapeHtml(getAvatarUrl(comment.userId?.name || 'User'))}"
+                                src="${escapeHtml(getAvatarUrl(comment.userId?.name || 'User', comment.userId?.avatar))}"
                                 alt="${escapeHtml(comment.userId?.name || 'User')}"
                                 loading="lazy"
                             >
@@ -900,8 +922,59 @@ function escapeHtml(value) {
         .replace(/'/g, '&#39;');
 }
 
-function getAvatarUrl(name) {
+function getAvatarUrl(name, customAvatar = '') {
+    const avatarValue = typeof customAvatar === 'string' ? customAvatar.trim() : '';
+    if (avatarValue) {
+        return avatarValue;
+    }
+
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'User')}&background=6366f1&color=fff&size=128`;
+}
+
+function setAvatarChip(elementId, avatar, fallbackInitial) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+
+    const avatarValue = typeof avatar === 'string' ? avatar.trim() : '';
+    if (avatarValue) {
+        el.textContent = '';
+        el.style.backgroundImage = `url("${avatarValue}")`;
+        el.classList.add('has-image');
+        return;
+    }
+
+    const initial = (fallbackInitial || 'U').charAt(0).toUpperCase();
+    el.textContent = initial;
+    el.style.backgroundImage = '';
+    el.classList.remove('has-image');
+}
+
+function setupFileInputs() {
+    document.querySelectorAll('.file-input-trigger').forEach((trigger) => {
+        trigger.addEventListener('click', () => {
+            const inputId = trigger.getAttribute('data-file-input');
+            const inputEl = inputId ? document.getElementById(inputId) : null;
+            inputEl?.click();
+        });
+    });
+
+    document.querySelectorAll('.file-input-hidden').forEach((inputEl) => {
+        inputEl.addEventListener('change', () => updateFileInputLabel(inputEl));
+        updateFileInputLabel(inputEl);
+    });
+}
+
+function updateFileInputLabel(inputEl) {
+    if (!inputEl) return;
+
+    const labelId = inputEl.dataset.fileNameTarget;
+    const placeholder = inputEl.dataset.filePlaceholder || 'No file selected';
+    const labelEl = labelId ? document.getElementById(labelId) : null;
+    if (!labelEl) return;
+
+    const selected = inputEl.files?.[0];
+    labelEl.textContent = selected ? selected.name : placeholder;
+    labelEl.classList.toggle('has-file', Boolean(selected));
 }
 
 function readFileAsDataUrl(file) {

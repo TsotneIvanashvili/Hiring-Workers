@@ -134,6 +134,21 @@
                                         <input type="password" id="register-password" placeholder="At least 6 characters" required>
                                     </div>
                                 </div>
+                                <div class="form-group">
+                                    <label for="register-avatar">Profile Photo (Optional)</label>
+                                    <div class="file-input-shell">
+                                        <input
+                                            id="register-avatar"
+                                            class="file-input-hidden"
+                                            type="file"
+                                            accept="image/*"
+                                            data-file-name-target="register-avatar-name"
+                                            data-file-placeholder="No photo selected"
+                                        >
+                                        <button type="button" class="file-input-trigger" data-file-input="register-avatar">Choose Photo</button>
+                                        <span class="file-input-name" id="register-avatar-name">No photo selected</span>
+                                    </div>
+                                </div>
                                 <button type="submit" class="btn btn-primary btn-large">
                                     <span class="btn-text">Create Account</span>
                                     <span class="btn-spinner hidden"></span>
@@ -395,7 +410,18 @@
                             <label for="feedback-content">Post an update</label>
                             <textarea id="feedback-content" rows="4" placeholder="Share your experience or tips..." maxlength="1500" required></textarea>
                             <label for="feedback-image" class="feedback-image-label">Attach image (optional)</label>
-                            <input id="feedback-image" class="feedback-image-input" type="file" accept="image/*">
+                            <div class="file-input-shell file-input-shell-feedback">
+                                <input
+                                    id="feedback-image"
+                                    class="file-input-hidden"
+                                    type="file"
+                                    accept="image/*"
+                                    data-file-name-target="feedback-image-name"
+                                    data-file-placeholder="No image selected"
+                                >
+                                <button type="button" class="file-input-trigger" data-file-input="feedback-image">Choose File</button>
+                                <span class="file-input-name" id="feedback-image-name">No image selected</span>
+                            </div>
                             <button type="submit" class="btn btn-primary feedback-post-btn">
                                 <span class="btn-text">Publish Post</span>
                                 <span class="btn-spinner hidden"></span>

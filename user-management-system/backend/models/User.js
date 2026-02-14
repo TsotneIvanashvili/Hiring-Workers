@@ -19,6 +19,11 @@ const userSchema = new mongoose.Schema({
             'Please provide a valid email address'
         ]
     },
+    avatar: {
+        type: String,
+        trim: true,
+        maxlength: [5000000, 'Avatar payload is too large']
+    },
     password: {
         type: String,
         required: [true, 'Password is required'],

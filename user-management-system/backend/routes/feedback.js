@@ -26,8 +26,8 @@ router.get('/', protect, async (req, res) => {
     try {
         const currentUserId = req.user._id.toString();
         const posts = await Feedback.find()
-            .populate('userId', 'name email')
-            .populate('comments.userId', 'name email')
+            .populate('userId', 'name email avatar')
+            .populate('comments.userId', 'name email avatar')
             .sort({ createdAt: -1 })
             .limit(100);
 
@@ -88,7 +88,7 @@ router.post('/', protect, async (req, res) => {
 
         const post = await Feedback.create(payload);
 
-        await post.populate('userId', 'name email');
+        await post.populate('userId', 'name email avatar');
         const postObject = post.toObject();
         postObject.canDelete = true;
 
@@ -176,7 +176,7 @@ router.post('/:id/comments', protect, async (req, res) => {
         });
 
         await post.save();
-        await post.populate('comments.userId', 'name');
+        await post.populate('comments.userId', 'name email avatar');
 
         const newComment = post.comments[post.comments.length - 1];
 
