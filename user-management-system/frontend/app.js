@@ -583,6 +583,7 @@ async function handleCreateFeedback(e) {
     const form = e.target;
     const btn = form.querySelector('button[type="submit"]');
     const contentEl = document.getElementById('feedback-content');
+    const imageInputEl = document.getElementById('feedback-image');
     const content = contentEl.value.trim();
 
     if (!content) {
@@ -590,16 +591,32 @@ async function handleCreateFeedback(e) {
         return;
     }
 
+    const selectedImage = imageInputEl?.files?.[0];
+    if (selectedImage && !selectedImage.type.startsWith('image/')) {
+        showToast('Please select a valid image file', 'error');
+        return;
+    }
+
+    if (selectedImage && selectedImage.size > 3 * 1024 * 1024) {
+        showToast('Image must be 3MB or smaller', 'error');
+        return;
+    }
+
     setButtonLoading(btn, true);
 
     try {
+        let imagePayload = '';
+        if (selectedImage) {
+            imagePayload = await readFileAsDataUrl(selectedImage);
+        }
+
         const res = await fetch(`${API_URL}/feedback`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ content })
+            body: JSON.stringify({ content, image: imagePayload })
         });
 
         const data = await res.json();
@@ -610,6 +627,7 @@ async function handleCreateFeedback(e) {
         }
 
         contentEl.value = '';
+        if (imageInputEl) imageInputEl.value = '';
         showToast('Post published', 'success');
         loadFeedback();
     } catch (error) {
@@ -709,17 +727,27 @@ function renderFeedbackPost(post) {
     const likes = Array.isArray(post.likes) ? post.likes : [];
     const comments = Array.isArray(post.comments) ? post.comments : [];
     const userLiked = likes.some((likeId) => String(likeId) === String(currentUser?.id));
+    const authorAvatar = getAvatarUrl(author);
     const postOwnerId = typeof post.userId === 'object' && post.userId
         ? (post.userId._id || post.userId.id)
         : post.userId;
     const currentUserId = currentUser?.id || currentUser?._id;
-    const isOwner = String(postOwnerId || '') === String(currentUserId || '');
+    const postOwnerEmail = post.userId?.email || '';
+    const currentUserEmail = currentUser?.email || '';
+    const isOwner = Boolean(post.canDelete)
+        || String(postOwnerId || '') === String(currentUserId || '')
+        || (postOwnerEmail && currentUserEmail && postOwnerEmail.toLowerCase() === currentUserEmail.toLowerCase());
 
     return `
         <article class="feedback-post">
             <header class="feedback-post-header">
                 <div class="feedback-author">
-                    <div class="feedback-author-avatar">${escapeHtml(author.charAt(0).toUpperCase())}</div>
+                    <img
+                        class="feedback-author-avatar"
+                        src="${escapeHtml(authorAvatar)}"
+                        alt="${escapeHtml(author)}"
+                        loading="lazy"
+                    >
                     <div>
                         <h3>${escapeHtml(author)}</h3>
                         <p>${escapeHtml(created)}</p>
@@ -728,10 +756,15 @@ function renderFeedbackPost(post) {
             </header>
 
             <p class="feedback-content">${escapeHtml(post.content)}</p>
+            ${post.image ? `
+                <div class="feedback-post-image-wrap">
+                    <img class="feedback-post-image" src="${escapeHtml(post.image)}" alt="Post image" loading="lazy">
+                </div>
+            ` : ''}
 
             <div class="feedback-post-actions">
                 <button class="feedback-like-btn ${userLiked ? 'liked' : ''}" onclick="toggleFeedbackLike('${post._id}')">
-                    ${userLiked ? 'Liked' : 'Like'} (${likes.length})
+                    ${userLiked ? '💙 Liked' : '👍 Like'} (${likes.length})
                 </button>
                 ${isOwner ? `<button type="button" class="feedback-delete-btn" onclick="deleteFeedbackPost('${post._id}')">Delete</button>` : ''}
             </div>
@@ -740,8 +773,16 @@ function renderFeedbackPost(post) {
                 ${comments.length > 0
                     ? comments.map((comment) => `
                         <div class="feedback-comment">
-                            <strong>${escapeHtml(comment.userId?.name || 'User')}</strong>
-                            <span>${escapeHtml(comment.text)}</span>
+                            <img
+                                class="feedback-comment-avatar"
+                                src="${escapeHtml(getAvatarUrl(comment.userId?.name || 'User'))}"
+                                alt="${escapeHtml(comment.userId?.name || 'User')}"
+                                loading="lazy"
+                            >
+                            <div class="feedback-comment-body">
+                                <strong>${escapeHtml(comment.userId?.name || 'User')}</strong>
+                                <span>${escapeHtml(comment.text)}</span>
+                            </div>
                         </div>
                     `).join('')
                     : '<p class="feedback-no-comments">No comments yet.</p>'
@@ -857,6 +898,19 @@ function escapeHtml(value) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
+}
+
+function getAvatarUrl(name) {
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'User')}&background=6366f1&color=fff&size=128`;
+}
+
+function readFileAsDataUrl(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error('Failed to read image'));
+        reader.readAsDataURL(file);
+    });
 }
 
 

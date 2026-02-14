@@ -2,22 +2,48 @@ const express = require('express');
 const router = express.Router();
 const Feedback = require('../models/Feedback');
 const { protect } = require('../middleware/auth');
+const MAX_IMAGE_SIZE_CHARS = 5 * 1024 * 1024;
+const HTTP_IMAGE_URL_PATTERN = /^https?:\/\/\S+$/i;
+const DATA_IMAGE_URL_PATTERN = /^data:image\/[a-zA-Z0-9.+-]+;base64,/;
+
+function isValidFeedbackImage(image) {
+    if (!image || typeof image !== 'string') {
+        return false;
+    }
+
+    const value = image.trim();
+    if (!value || value.length > MAX_IMAGE_SIZE_CHARS) {
+        return false;
+    }
+
+    return HTTP_IMAGE_URL_PATTERN.test(value) || DATA_IMAGE_URL_PATTERN.test(value);
+}
 
 // @route   GET /api/feedback
 // @desc    Get feedback feed
 // @access  Private
 router.get('/', protect, async (req, res) => {
     try {
+        const currentUserId = req.user._id.toString();
         const posts = await Feedback.find()
-            .populate('userId', 'name')
-            .populate('comments.userId', 'name')
+            .populate('userId', 'name email')
+            .populate('comments.userId', 'name email')
             .sort({ createdAt: -1 })
             .limit(100);
 
+        const feed = posts.map((post) => {
+            const postObject = post.toObject();
+            const ownerId = postObject.userId && typeof postObject.userId === 'object'
+                ? postObject.userId._id
+                : postObject.userId;
+            postObject.canDelete = String(ownerId || '') === currentUserId;
+            return postObject;
+        });
+
         res.status(200).json({
             success: true,
-            count: posts.length,
-            data: posts
+            count: feed.length,
+            data: feed
         });
     } catch (error) {
         console.error('Get feedback error:', error);
@@ -33,26 +59,43 @@ router.get('/', protect, async (req, res) => {
 // @access  Private
 router.post('/', protect, async (req, res) => {
     try {
-        const { content } = req.body;
+        const { content, image } = req.body;
+        const trimmedContent = String(content || '').trim();
+        const trimmedImage = typeof image === 'string' ? image.trim() : '';
 
-        if (!content || !content.trim()) {
+        if (!trimmedContent) {
             return res.status(400).json({
                 success: false,
                 error: 'Post content is required'
             });
         }
 
-        const post = await Feedback.create({
-            userId: req.user._id,
-            content: content.trim()
-        });
+        if (trimmedImage && !isValidFeedbackImage(trimmedImage)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Image must be a valid image URL or uploaded image data'
+            });
+        }
 
-        await post.populate('userId', 'name');
+        const payload = {
+            userId: req.user._id,
+            content: trimmedContent
+        };
+
+        if (trimmedImage) {
+            payload.image = trimmedImage;
+        }
+
+        const post = await Feedback.create(payload);
+
+        await post.populate('userId', 'name email');
+        const postObject = post.toObject();
+        postObject.canDelete = true;
 
         res.status(201).json({
             success: true,
             message: 'Post published',
-            data: post
+            data: postObject
         });
     } catch (error) {
         console.error('Create feedback post error:', error);

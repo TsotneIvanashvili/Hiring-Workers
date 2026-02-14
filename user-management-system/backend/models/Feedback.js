@@ -32,6 +32,11 @@ const feedbackSchema = new mongoose.Schema({
         trim: true,
         maxlength: [1500, 'Post content cannot exceed 1500 characters']
     },
+    image: {
+        type: String,
+        trim: true,
+        maxlength: [5000000, 'Image payload is too large']
+    },
     likes: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'

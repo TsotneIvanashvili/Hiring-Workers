@@ -1652,6 +1652,22 @@ input.error {
     letter-spacing: 0.03em;
 }
 
+.feedback-image-label {
+    margin-top: 10px;
+}
+
+.feedback-image-input {
+    width: 100%;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    background: var(--bg-glass);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-size: 0.86rem;
+}
+
 .feedback-composer textarea {
     width: 100%;
     min-height: 110px;
@@ -1712,15 +1728,10 @@ input.error {
 .feedback-author-avatar {
     width: 36px;
     height: 36px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, var(--primary), var(--accent));
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Outfit', sans-serif;
-    font-size: 0.92rem;
-    font-weight: 700;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-sm);
 }
 
 .feedback-author h3 {
@@ -1740,6 +1751,21 @@ input.error {
     margin-bottom: 12px;
     white-space: pre-wrap;
     word-break: break-word;
+}
+
+.feedback-post-image-wrap {
+    margin-bottom: 12px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: #0b0b11;
+}
+
+.feedback-post-image {
+    width: 100%;
+    display: block;
+    max-height: 420px;
+    object-fit: cover;
 }
 
 .feedback-post-actions {
@@ -1802,20 +1828,35 @@ input.error {
 
 .feedback-comment {
     display: flex;
-    flex-direction: column;
-    gap: 2px;
+    align-items: flex-start;
+    gap: 10px;
     border: 1px solid var(--border);
     border-radius: 10px;
     background: var(--bg-glass);
     padding: 9px 10px;
 }
 
-.feedback-comment strong {
+.feedback-comment-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--border-light);
+    flex-shrink: 0;
+}
+
+.feedback-comment-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.feedback-comment-body strong {
     font-size: 0.8rem;
     color: var(--text-primary);
 }
 
-.feedback-comment span {
+.feedback-comment-body span {
     color: var(--text-secondary);
     font-size: 0.86rem;
     line-height: 1.55;
