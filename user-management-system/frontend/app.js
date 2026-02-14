@@ -6,6 +6,7 @@ const API_URL = (window.location.hostname === 'localhost' || window.location.hos
     : 'https://hiring-workers.onrender.com/api';
 let currentUser = null;
 let token = localStorage.getItem('token');
+const APP_PAGES = new Set(['workers', 'feedback', 'hires', 'dashboard', 'profile']);
 
 // ============================================
 // Initialization
@@ -80,7 +81,7 @@ async function handleLogin(e) {
         localStorage.setItem('token', token);
         currentUser = data.user;
 
-        showApp('workers');
+        showApp(getRequestedAppPage());
         showToast('Welcome back!', 'success');
 
     } catch (error) {
@@ -122,7 +123,7 @@ async function handleRegister(e) {
         localStorage.setItem('token', token);
         currentUser = data.user;
 
-        showApp('workers');
+        showApp(getRequestedAppPage());
         showToast('Account created successfully!', 'success');
 
     } catch (error) {
@@ -150,7 +151,7 @@ async function loadUser() {
 
         const data = await res.json();
         currentUser = data.user;
-        showApp('workers');
+        showApp(getRequestedAppPage());
 
     } catch (error) {
         logout();
@@ -173,6 +174,16 @@ function showAuthPage() {
     document.getElementById('app')?.classList.add('hidden');
 }
 
+function getRequestedAppPage() {
+    const hashPage = (window.location.hash || '')
+        .replace('#', '')
+        .replace(/-page$/, '')
+        .trim()
+        .toLowerCase();
+
+    return APP_PAGES.has(hashPage) ? hashPage : 'workers';
+}
+
 function showApp(initialPage = 'workers') {
     document.getElementById('auth-page')?.classList.add('hidden');
     document.getElementById('app')?.classList.remove('hidden');
@@ -183,16 +194,24 @@ function showApp(initialPage = 'workers') {
 }
 
 function navigate(page) {
+    if (!APP_PAGES.has(page)) {
+        page = 'workers';
+    }
+
     document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
 
     const pageEl = document.getElementById(`${page}-page`);
     pageEl?.classList.remove('hidden');
 
-    const activeNavPage = page === 'feedback' ? 'feedback' : 'workers';
+    const activeNavPage = page === 'feedback' || page === 'hires' ? page : 'workers';
     document.querySelectorAll('[data-nav-page]').forEach((link) => {
         const isActive = link.getAttribute('data-nav-page') === activeNavPage;
         link.classList.toggle('active', isActive);
     });
+
+    if (window.location.hash !== `#${page}`) {
+        window.history.replaceState(null, '', `#${page}`);
+    }
 
     const userNameDisplay = document.getElementById('user-name-display');
     if (userNameDisplay) {
