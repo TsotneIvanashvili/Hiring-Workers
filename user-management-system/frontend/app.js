@@ -77,7 +77,7 @@ async function handleLogin(e) {
         localStorage.setItem('token', token);
         currentUser = data.user;
 
-        showApp();
+        showApp('workers');
         showToast('Welcome back!', 'success');
 
     } catch (error) {
@@ -114,7 +114,7 @@ async function handleRegister(e) {
         localStorage.setItem('token', token);
         currentUser = data.user;
 
-        showApp();
+        showApp('profile');
         showToast('Account created successfully!', 'success');
 
     } catch (error) {
@@ -137,7 +137,7 @@ async function loadUser() {
 
         const data = await res.json();
         currentUser = data.user;
-        showApp();
+        showApp('workers');
 
     } catch (error) {
         logout();
@@ -160,27 +160,36 @@ function showAuthPage() {
     document.getElementById('app')?.classList.add('hidden');
 }
 
-function showApp() {
+function showApp(initialPage = 'workers') {
     document.getElementById('auth-page')?.classList.add('hidden');
     document.getElementById('app')?.classList.remove('hidden');
 
     updateBalance();
     updateUserDisplay();
-    navigate('workers');
+    navigate(initialPage);
 }
 
 function navigate(page) {
-    document.querySelectorAll('.app-page').forEach(p => p.classList.add('hidden'));
-    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
 
     const pageEl = document.getElementById(`${page}-page`);
     pageEl?.classList.remove('hidden');
 
-    const navLinks = document.querySelectorAll('.nav-link');
-    if (page === 'dashboard') navLinks[0]?.classList.add('active');
-    if (page === 'workers') navLinks[1]?.classList.add('active');
-    if (page === 'hires') navLinks[2]?.classList.add('active');
+    const appPages = ['profile', 'dashboard', 'workers', 'hires'];
+    const activeNavPage = appPages.includes(page) ? 'workers' : page;
+    document.querySelectorAll('[data-nav-page]').forEach((link) => {
+        const isActive = link.getAttribute('data-nav-page') === activeNavPage;
+        link.classList.toggle('active', isActive);
+    });
 
+    const userNameDisplay = document.getElementById('user-name-display');
+    if (userNameDisplay) {
+        userNameDisplay.classList.toggle('hidden', page !== 'workers');
+    }
+
+    document.getElementById('user-dropdown')?.classList.add('hidden');
+
+    if (page === 'profile') loadProfile();
     if (page === 'dashboard') loadDashboard();
     if (page === 'workers') loadWorkers();
     if (page === 'hires') loadHires();
@@ -188,7 +197,35 @@ function navigate(page) {
 
 function updateUserDisplay() {
     if (!currentUser) return;
-    document.getElementById('user-name-display').textContent = currentUser.name.split(' ')[0];
+    const firstName = currentUser.name.split(' ')[0];
+    const initial = firstName.charAt(0).toUpperCase();
+
+    document.getElementById('user-name-display').textContent = firstName;
+    document.getElementById('user-avatar').textContent = initial;
+
+    const profileAvatarEl = document.getElementById('profile-avatar');
+    if (profileAvatarEl) profileAvatarEl.textContent = initial;
+
+    const profileNameEl = document.getElementById('profile-name');
+    if (profileNameEl) profileNameEl.textContent = currentUser.name;
+
+    const profileEmailEl = document.getElementById('profile-email');
+    if (profileEmailEl) profileEmailEl.textContent = currentUser.email;
+
+    const profileIdEl = document.getElementById('profile-id');
+    if (profileIdEl) profileIdEl.textContent = currentUser.id || '-';
+
+    const homeProfileAvatarEl = document.getElementById('home-profile-avatar');
+    if (homeProfileAvatarEl) homeProfileAvatarEl.textContent = initial;
+
+    const homeProfileNameEl = document.getElementById('home-profile-name');
+    if (homeProfileNameEl) homeProfileNameEl.textContent = currentUser.name;
+
+    const homeProfileEmailEl = document.getElementById('home-profile-email');
+    if (homeProfileEmailEl) homeProfileEmailEl.textContent = currentUser.email;
+
+    const homeProfileIdEl = document.getElementById('home-profile-id');
+    if (homeProfileIdEl) homeProfileIdEl.textContent = currentUser.id || '-';
 }
 
 function updateBalance() {
@@ -197,6 +234,17 @@ function updateBalance() {
     document.getElementById('nav-balance').textContent = balance;
     document.getElementById('dashboard-balance').textContent = balance;
     document.getElementById('modal-current-balance').textContent = balance;
+
+    const profileBalanceEl = document.getElementById('profile-balance');
+    if (profileBalanceEl) profileBalanceEl.textContent = balance;
+
+    const homeProfileBalanceEl = document.getElementById('home-profile-balance');
+    if (homeProfileBalanceEl) homeProfileBalanceEl.textContent = balance;
+}
+
+function loadProfile() {
+    updateUserDisplay();
+    updateBalance();
 }
 
 function toggleUserMenu() {
@@ -259,11 +307,32 @@ async function loadWorkers() {
 }
 
 function renderWorkerCard(worker) {
-    const initial = worker.name.charAt(0);
+    const imageUrl = worker.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(worker.name)}&size=400&background=1a1a26&color=fff`;
+    const fallbackImageUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(worker.name)}&size=400&background=1a1a26&color=fff`;
+    const availability = String(worker.availability || 'available').toLowerCase();
+    const availabilityLabel = availability === 'busy'
+        ? 'Busy right now'
+        : availability === 'unavailable'
+            ? 'Unavailable'
+            : 'Available now';
+    const skills = Array.isArray(worker.skills) ? worker.skills : [];
+
     return `
         <div class="worker-card">
+            <div class="worker-media">
+                <img
+                    class="worker-image"
+                    src="${imageUrl}"
+                    alt="${worker.name}"
+                    loading="lazy"
+                    onerror="this.onerror=null;this.src='${fallbackImageUrl}';"
+                >
+                <div class="worker-badges">
+                    <span class="worker-category-badge">${worker.category || 'Professional'}</span>
+                    <span class="worker-rating-badge">&#9733; ${worker.rating}</span>
+                </div>
+            </div>
             <div class="worker-header">
-                <div class="worker-avatar">${initial}</div>
                 <div class="worker-info">
                     <h3>${worker.name}</h3>
                     <p class="worker-title">${worker.title}</p>
@@ -271,21 +340,20 @@ function renderWorkerCard(worker) {
             </div>
             <p class="worker-description">${worker.description}</p>
             <div class="worker-skills">
-                ${worker.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                ${skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
             </div>
             <div class="worker-footer">
-                <div>
+                <div class="worker-pricing">
                     <div class="worker-rate">$${worker.hourlyRate}/hr</div>
-                    <div class="worker-rating">⭐ ${worker.rating}</div>
+                    <div class="worker-availability ${availability}">${availabilityLabel}</div>
                 </div>
-                <button class="btn btn-primary" onclick='hireWorker("${worker._id}", "${worker.name}", ${worker.hourlyRate})'>
+                <button class="btn btn-primary worker-hire-btn" onclick='hireWorker("${worker._id}", "${worker.name}", ${worker.hourlyRate})'>
                     Hire Now
                 </button>
             </div>
         </div>
     `;
 }
-
 async function hireWorker(workerId, workerName, rate) {
     if (currentUser.balance < rate) {
         showToast(`Insufficient funds. You need $${rate} but have $${currentUser.balance.toFixed(2)}`, 'error');
@@ -473,4 +541,5 @@ function showToast(message, type = 'success') {
         toast.classList.add('hidden');
     }, 3000);
 }
+
 

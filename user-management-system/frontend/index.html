@@ -155,37 +155,20 @@
         <nav class="navbar">
             <div class="container">
                 <div class="nav-content">
-                    <div class="nav-left">
-                        <div class="brand">
-                            <span class="brand-icon">
-                                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                                    <rect width="28" height="28" rx="8" fill="url(#brand-grad2)"/>
-                                    <path d="M8 10h12M8 14h8M8 18h10" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-                                    <defs><linearGradient id="brand-grad2" x1="0" y1="0" x2="28" y2="28"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs>
-                                </svg>
-                            </span>
-                            <span class="brand-name">HireWork</span>
-                        </div>
-                    </div>
-                    <div class="nav-center">
-                        <button class="nav-link" onclick="navigate('dashboard')">
-                            <span class="nav-icon">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-                            </span>
-                            <span>Dashboard</span>
-                        </button>
-                        <button class="nav-link active" onclick="navigate('workers')">
-                            <span class="nav-icon">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><circle cx="19" cy="7" r="3"/><path d="M21 21v-1.5a3 3 0 00-3-3"/></svg>
-                            </span>
-                            <span>Find Talent</span>
-                        </button>
-                        <button class="nav-link" onclick="navigate('hires')">
-                            <span class="nav-icon">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
-                            </span>
-                            <span>My Hires</span>
-                        </button>
+                    <a class="brand" href="#" onclick="navigate('workers'); return false;" aria-label="Go to app home">
+                        <span class="brand-icon">
+                            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                                <rect width="28" height="28" rx="8" fill="url(#brand-grad2)"/>
+                                <path d="M8 10h12M8 14h8M8 18h10" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+                                <defs><linearGradient id="brand-grad2" x1="0" y1="0" x2="28" y2="28"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs>
+                            </svg>
+                        </span>
+                        <span class="brand-name">HireWork</span>
+                    </a>
+                    <div class="nav-links">
+                        <a href="#" class="active" data-nav-page="workers" onclick="navigate('workers'); return false;">Home</a>
+                        <a href="./works.html">How It Works</a>
+                        <a href="./pricing.html">Pricing</a>
                     </div>
                     <div class="nav-right">
                         <button class="balance-btn" onclick="showFundsModal()">
@@ -206,9 +189,17 @@
                                 </span>
                             </button>
                             <div class="user-dropdown hidden" id="user-dropdown">
+                                <button onclick="navigate('profile')">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21a8 8 0 10-16 0"/><circle cx="12" cy="7" r="4"/></svg>
+                                    My Profile
+                                </button>
                                 <button onclick="navigate('dashboard')">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
                                     My Dashboard
+                                </button>
+                                <button onclick="navigate('hires')">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+                                    My Hires
                                 </button>
                                 <button onclick="logout()" class="logout-btn">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
@@ -223,6 +214,50 @@
 
         <!-- Main Content -->
         <main class="main-content">
+            <!-- Profile Page -->
+            <div id="profile-page" class="page-content hidden">
+                <div class="container">
+                    <div class="page-header">
+                        <div>
+                            <h1>My Profile</h1>
+                            <p class="page-subtitle">Account details and quick actions</p>
+                        </div>
+                    </div>
+
+                    <div class="profile-grid">
+                        <section class="profile-card">
+                            <div class="profile-header">
+                                <div class="profile-avatar-large" id="profile-avatar">U</div>
+                                <div>
+                                    <h2 id="profile-name">User</h2>
+                                    <p id="profile-email">user@example.com</p>
+                                </div>
+                            </div>
+                            <div class="profile-meta">
+                                <div class="profile-meta-row">
+                                    <span>Current Balance</span>
+                                    <strong id="profile-balance">$0.00</strong>
+                                </div>
+                                <div class="profile-meta-row">
+                                    <span>Member ID</span>
+                                    <code id="profile-id">-</code>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="profile-card">
+                            <h3>Quick Actions</h3>
+                            <p class="profile-help">Jump straight to your dashboard or start hiring.</p>
+                            <div class="profile-actions">
+                                <button class="btn btn-secondary" onclick="navigate('dashboard')">Open Dashboard</button>
+                                <button class="btn btn-secondary" onclick="navigate('workers')">Find Talent</button>
+                                <button class="btn btn-secondary" onclick="showFundsModal()">Add Funds</button>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+
             <!-- Dashboard Page -->
             <div id="dashboard-page" class="page-content hidden">
                 <div class="container">
@@ -292,6 +327,24 @@
                             <p class="page-subtitle">Browse verified professionals ready to help with your projects</p>
                         </div>
                     </div>
+
+                    <section class="home-profile-panel">
+                        <div class="home-profile-main">
+                            <div class="home-profile-avatar" id="home-profile-avatar">U</div>
+                            <div class="home-profile-details">
+                                <h3 id="home-profile-name">User</h3>
+                                <p id="home-profile-email">user@example.com</p>
+                                <small>Member ID: <span id="home-profile-id">-</span></small>
+                            </div>
+                        </div>
+                        <div class="home-profile-actions">
+                            <div class="home-balance-chip">
+                                <span>Balance</span>
+                                <strong id="home-profile-balance">$0.00</strong>
+                            </div>
+                            <button class="btn btn-secondary" onclick="navigate('profile')">View Profile</button>
+                        </div>
+                    </section>
 
                     <div id="workers-grid" class="workers-grid"></div>
                 </div>
