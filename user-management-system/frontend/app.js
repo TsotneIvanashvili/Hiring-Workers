@@ -622,6 +622,33 @@ async function toggleFeedbackLike(postId) {
     }
 }
 
+async function deleteFeedbackPost(postId) {
+    const confirmed = window.confirm('Delete this post? This action cannot be undone.');
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_URL}/feedback/${postId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            showToast(data.error || 'Failed to delete post', 'error');
+            return;
+        }
+
+        showToast('Post deleted', 'success');
+        loadFeedback();
+    } catch (error) {
+        console.error('Delete feedback post error:', error);
+        showToast('Failed to delete post', 'error');
+    }
+}
+
 async function submitFeedbackComment(e, postId) {
     e.preventDefault();
     const form = e.target;
@@ -663,6 +690,11 @@ function renderFeedbackPost(post) {
     const likes = Array.isArray(post.likes) ? post.likes : [];
     const comments = Array.isArray(post.comments) ? post.comments : [];
     const userLiked = likes.some((likeId) => String(likeId) === String(currentUser?.id));
+    const postOwnerId = typeof post.userId === 'object' && post.userId
+        ? (post.userId._id || post.userId.id)
+        : post.userId;
+    const currentUserId = currentUser?.id || currentUser?._id;
+    const isOwner = String(postOwnerId || '') === String(currentUserId || '');
 
     return `
         <article class="feedback-post">
@@ -682,6 +714,7 @@ function renderFeedbackPost(post) {
                 <button class="feedback-like-btn ${userLiked ? 'liked' : ''}" onclick="toggleFeedbackLike('${post._id}')">
                     ${userLiked ? 'Liked' : 'Like'} (${likes.length})
                 </button>
+                ${isOwner ? `<button type="button" class="feedback-delete-btn" onclick="deleteFeedbackPost('${post._id}')">Delete</button>` : ''}
             </div>
 
             <div class="feedback-comments">

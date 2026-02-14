@@ -1743,6 +1743,9 @@ input.error {
 }
 
 .feedback-post-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     margin-bottom: 12px;
 }
 
@@ -1769,6 +1772,25 @@ input.error {
     background: rgba(99, 102, 241, 0.16);
     border-color: rgba(129, 140, 248, 0.5);
     color: var(--primary-light);
+}
+
+.feedback-delete-btn {
+    border: 1px solid rgba(244, 63, 94, 0.35);
+    border-radius: 10px;
+    background: rgba(244, 63, 94, 0.12);
+    color: #fda4af;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.feedback-delete-btn:hover {
+    border-color: rgba(244, 63, 94, 0.55);
+    background: rgba(244, 63, 94, 0.2);
+    color: #fecdd3;
 }
 
 .feedback-comments {

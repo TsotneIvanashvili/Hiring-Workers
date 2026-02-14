@@ -151,4 +151,40 @@ router.post('/:id/comments', protect, async (req, res) => {
     }
 });
 
+// @route   DELETE /api/feedback/:id
+// @desc    Delete feedback post (owner only)
+// @access  Private
+router.delete('/:id', protect, async (req, res) => {
+    try {
+        const post = await Feedback.findById(req.params.id);
+
+        if (!post) {
+            return res.status(404).json({
+                success: false,
+                error: 'Post not found'
+            });
+        }
+
+        if (post.userId.toString() !== req.user._id.toString()) {
+            return res.status(403).json({
+                success: false,
+                error: 'You can only delete your own posts'
+            });
+        }
+
+        await Feedback.deleteOne({ _id: post._id });
+
+        res.status(200).json({
+            success: true,
+            message: 'Post deleted'
+        });
+    } catch (error) {
+        console.error('Delete feedback post error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to delete post'
+        });
+    }
+});
+
 module.exports = router;
