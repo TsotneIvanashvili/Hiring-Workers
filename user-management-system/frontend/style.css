@@ -485,15 +485,17 @@ label {
 .input-icon {
     position: absolute;
     left: 14px;
+    top: 50%;
+    transform: translateY(-50%); /* vertically center icon */
     color: var(--text-muted);
     pointer-events: none;
-    transition: var(--transition);
     z-index: 1;
 }
 
+
 .input-wrapper input {
     width: 100%;
-    padding: 12px 14px 12px 44px;
+    padding: 12px 14px 12px 44px; /* base padding */
     background: var(--bg-glass);
     border: 1.5px solid var(--border);
     border-radius: var(--radius);
@@ -502,6 +504,7 @@ label {
     color: var(--text-primary);
     transition: var(--transition);
     outline: none;
+    box-sizing: border-box;
 }
 
 .input-wrapper input::placeholder {

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HireWork — How It Works</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="works.css" />
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div id="page-loader" class="page-loader" aria-hidden="true">
+    <div class="loader-card">
+      <div class="loader-logo">
+        <span class="dot"></span>
+        <span class="txt">HireWork</span>
+      </div>
+      <div class="loader-bar" role="progressbar" aria-label="Loading"></div>
+      <p class="loader-sub">Preparing the workflow…</p>
+    </div>
+  </div>
+
+  <!-- Background Orbs -->
+  <div class="bg-orbs" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- Top Nav -->
+  <nav class="top-nav">
+    <div class="container nav-content">
+      <a class="brand" href="index.html" aria-label="Go to home">
+        <span class="brand-icon" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <rect width="28" height="28" rx="8" fill="url(#brand-grad)"/>
+            <path d="M8 10h12M8 14h8M8 18h10" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+            <defs>
+              <linearGradient id="brand-grad" x1="0" y1="0" x2="28" y2="28">
+                <stop stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </span>
+        <span class="brand-name">HireWork</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a class="active" href="works.html">How It Works</a>
+        <a href="pricing.html">Pricing</a>
+      </div>
+
+      <a class="nav-cta" href="index.html#auth-page">Get Started</a>
+    </div>
+  </nav>
+
+  <main class="main">
+    <header class="hero container">
+      <div class="hero-left">
+        <div class="pill">
+          <span class="pill-dot"></span>
+          Simple workflow • Secure balance system • Verified talent
+        </div>
+
+        <h1 class="title">
+          How HireWork <span class="grad">Works</span>
+        </h1>
+
+        <p class="subtitle">
+          Register, add funds, hire verified professionals, track progress, and submit your project — all in one clean flow.
+        </p>
+
+        <div class="hero-actions">
+          <a class="btn primary" href="index.html#auth-page">Create Account</a>
+          <a class="btn ghost" href="#steps">See Steps</a>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <strong>Fast</strong>
+            <span>Hire in minutes</span>
+          </div>
+          <div class="divider"></div>
+          <div class="stat">
+            <strong>Secure</strong>
+            <span>Balance-based hiring</span>
+          </div>
+          <div class="divider"></div>
+          <div class="stat">
+            <strong>Clear</strong>
+            <span>Simple submissions</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-right">
+        <div class="preview-card floaty">
+          <div class="preview-top">
+            <div class="badge">
+              <span class="spark" aria-hidden="true"></span>
+              Workflow Preview
+            </div>
+            <div class="mini-chip">In-app</div>
+          </div>
+
+          <div class="timeline">
+            <div class="t-item active">
+              <div class="t-dot"></div>
+              <div class="t-text">
+                <strong>Register</strong>
+                <span>Create your HireWork account</span>
+              </div>
+            </div>
+            <div class="t-item">
+              <div class="t-dot"></div>
+              <div class="t-text">
+                <strong>Add Funds</strong>
+                <span>Top up your balance safely</span>
+              </div>
+            </div>
+            <div class="t-item">
+              <div class="t-dot"></div>
+              <div class="t-text">
+                <strong>Hire Talent</strong>
+                <span>Choose a pro and start a job</span>
+              </div>
+            </div>
+            <div class="t-item">
+              <div class="t-dot"></div>
+              <div class="t-text">
+                <strong>Delivery</strong>
+                <span>They complete the work</span>
+              </div>
+            </div>
+            <div class="t-item">
+              <div class="t-dot"></div>
+              <div class="t-text">
+                <strong>Submit</strong>
+                <span>Upload and confirm inside the website</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="preview-bottom">
+            <div class="hint">
+              <span class="hint-icon">✓</span>
+              You can’t hire if your balance isn’t enough.
+            </div>
+            <a class="btn small primary" href="pricing.html">View Plans</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section id="steps" class="container section">
+      <h2 class="section-title">Step-by-step workflow</h2>
+      <p class="section-sub">
+        This is the exact flow users should experience.
+      </p>
+
+      <div class="steps-grid">
+        <article class="step-card floaty" style="--d:0s">
+          <div class="step-num">01</div>
+          <h3>Register</h3>
+          <p>Create your account with email + password. Your dashboard is ready instantly.</p>
+          <div class="step-foot">Instant access • Secure auth</div>
+        </article>
+
+        <article class="step-card floaty" style="--d:.1s">
+          <div class="step-num">02</div>
+          <h3>Add Funds</h3>
+          <p>Top up your balance from the funds modal. Use quick amounts or type a custom value.</p>
+          <div class="step-foot">Balance-based system</div>
+        </article>
+
+        <article class="step-card floaty" style="--d:.2s">
+          <div class="step-num">03</div>
+          <h3>Hire a Professional</h3>
+          <p>Pick a worker card and hire them. If your balance is too low, hiring is blocked.</p>
+          <div class="step-foot">Prevents overspending</div>
+        </article>
+
+        <article class="step-card floaty" style="--d:.3s">
+          <div class="step-num">04</div>
+          <h3>Work Gets Done</h3>
+          <p>The professional completes the job. You track it in “My Hires” and your dashboard activity.</p>
+          <div class="step-foot">Transparent tracking</div>
+        </article>
+
+        <article class="step-card floaty" style="--d:.4s">
+          <div class="step-num">05</div>
+          <h3>Submit in the Website</h3>
+          <p>Submit the finished work through the platform (upload/link + confirmation) so it stays organized.</p>
+          <div class="step-foot">Centralized delivery</div>
+        </article>
+
+        <article class="step-card floaty" style="--d:.5s">
+          <div class="step-num">06</div>
+          <h3>Repeat + Scale</h3>
+          <p>Hire again anytime. Your recent hires stay visible for fast re-hiring and management.</p>
+          <div class="step-foot">Built for repeat usage</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="container section">
+      <div class="cta floaty">
+        <div class="cta-left">
+          <h2>Ready to try it?</h2>
+          <p>Jump into the app, add funds, and hire your first pro.</p>
+        </div>
+        <div class="cta-right">
+          <a class="btn primary" href="index.html#auth-page">Start Now</a>
+          <a class="btn ghost" href="pricing.html">See Pricing</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container foot-content">
+      <div class="foot-brand">
+        <span class="brand-name">HireWork</span>
+        <p>Your trusted platform for hiring top professionals.</p>
+      </div>
+      <div class="foot-links">
+        <a href="index.html">Home</a>
+        <a href="how-it-works.html">How It Works</a>
+        <a href="pricing.html">Pricing</a>
+      </div>
+      <div class="foot-bottom">© 2026 HireWork. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <script>
+    // Loader off (fast but smooth)
+    window.addEventListener('load', () => {
+      const loader = document.getElementById('page-loader');
+      loader.classList.add('done');
+      setTimeout(() => loader.remove(), 550);
+    });
+
+    // Subtle scroll reveal
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) e.target.classList.add('in');
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.step-card, .cta, .preview-card, .hero-left').forEach(el => {
+      el.classList.add('reveal');
+      io.observe(el);
+    });
+  </script>
+</body>
+</html>

@@ -81,7 +81,7 @@ async function handleLogin(e) {
         showToast('Welcome back!', 'success');
 
     } catch (error) {
-        showAuthError('Connection error. Please try again.');
+        showAuthError('Connection error. Check that the backend is running and CORS allows this frontend origin.');
     } finally {
         setButtonLoading(btn, false);
     }
@@ -118,7 +118,7 @@ async function handleRegister(e) {
         showToast('Account created successfully!', 'success');
 
     } catch (error) {
-        showAuthError('Connection error. Please try again.');
+        showAuthError('Connection error. Check that the backend is running and CORS allows this frontend origin.');
     } finally {
         setButtonLoading(btn, false);
     }
@@ -473,3 +473,4 @@ function showToast(message, type = 'success') {
         toast.classList.add('hidden');
     }, 3000);
 }
+

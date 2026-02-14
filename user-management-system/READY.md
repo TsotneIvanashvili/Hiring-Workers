@@ -22,14 +22,19 @@
 ## 🚀 Currently Running
 
 **Backend:** http://localhost:5000 ✅
-**Frontend:** http://localhost:3000 ✅
+**Frontend:** http://localhost:3000 or http://localhost:5500 ✅
+
+---
+
+## CORS Note
+If your frontend runs on port 3000 or 5500, ensure backend CORS allowlist includes that origin ("CORS_ALLOWED_ORIGINS" in "backend/.env" ).
 
 ---
 
 ## 📝 Quick Test
 
 ### 1. Open the App
-Navigate to: **http://localhost:3000**
+Navigate to: **http://localhost:3000** or **http://localhost:5500**
 
 ### 2. Create an Account
 - Click "Register" tab
@@ -234,3 +239,4 @@ db.hires.find().pretty()
 Your worker hiring platform is fully functional and ready to use!
 
 **Test it now:** http://localhost:3000
+

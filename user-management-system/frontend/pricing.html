@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HireWork — Pricing</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="pricing.css" />
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div id="page-loader" class="page-loader" aria-hidden="true">
+    <div class="loader-card">
+      <div class="loader-logo">
+        <span class="dot"></span>
+        <span class="txt">HireWork</span>
+      </div>
+      <div class="loader-bar" role="progressbar" aria-label="Loading"></div>
+      <p class="loader-sub">Loading pricing…</p>
+    </div>
+  </div>
+
+  <!-- Background Orbs -->
+  <div class="bg-orbs" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- Top Nav -->
+  <nav class="top-nav">
+    <div class="container nav-content">
+      <a class="brand" href="index.html" aria-label="Go to home">
+        <span class="brand-icon" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <rect width="28" height="28" rx="8" fill="url(#brand-grad)"/>
+            <path d="M8 10h12M8 14h8M8 18h10" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+            <defs>
+              <linearGradient id="brand-grad" x1="0" y1="0" x2="28" y2="28">
+                <stop stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </span>
+        <span class="brand-name">HireWork</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="works.html">How It Works</a>
+        <a class="active" href="pricing.html">Pricing</a>
+      </div>
+
+      <a class="nav-cta" href="index.html#auth-page">Get Started</a>
+    </div>
+  </nav>
+
+  <main class="main container">
+    <header class="pricing-hero reveal">
+      <div class="pill">
+        <span class="pill-dot"></span>
+        Transparent plans • Upgrade anytime
+      </div>
+
+      <h1 class="title">
+        Simple <span class="grad">Pricing</span>
+      </h1>
+
+      <p class="subtitle">
+        Choose a plan that matches how often you hire. No drama, no hidden fees.
+      </p>
+
+      <div class="toggle">
+        <button class="t-btn active" data-mode="monthly">Monthly</button>
+        <button class="t-btn" data-mode="yearly">Yearly <span class="save">save 20%</span></button>
+      </div>
+    </header>
+
+    <section class="plans">
+      <!-- Basic -->
+      <article class="plan-card floaty reveal" style="--d:0s" data-price="0">
+        <div class="plan-top">
+          <div>
+            <h3>Basic</h3>
+            <p>Start hiring with zero subscription cost.</p>
+          </div>
+          <span class="tag">Free</span>
+        </div>
+
+        <div class="price">
+          <span class="amount" data-monthly="$0" data-yearly="$0">$0</span>
+          <span class="per">/month</span>
+        </div>
+
+        <ul class="features">
+          <li><span class="ok">✓</span> Browse verified talent</li>
+          <li><span class="ok">✓</span> Balance wallet system</li>
+          <li><span class="ok">✓</span> Hire + manage in dashboard</li>
+          <li><span class="muted">•</span> Standard support</li>
+        </ul>
+
+        <a class="btn ghost" href="index.html#auth-page">Get Basic</a>
+      </article>
+
+      <!-- Free Plus -->
+      <article class="plan-card featured floaty reveal" style="--d:.12s" data-price="5">
+        <div class="glow" aria-hidden="true"></div>
+
+        <div class="plan-top">
+          <div>
+            <h3>Free Plus</h3>
+            <p>More speed + better tools for repeat hiring.</p>
+          </div>
+          <span class="tag hot">Popular</span>
+        </div>
+
+        <div class="price">
+          <span class="amount" data-monthly="$5" data-yearly="$48">$5</span>
+          <span class="per">/month</span>
+        </div>
+
+        <ul class="features">
+          <li><span class="ok">✓</span> Everything in Basic</li>
+          <li><span class="ok">✓</span> Priority matching</li>
+          <li><span class="ok">✓</span> Faster support response</li>
+          <li><span class="ok">✓</span> Enhanced hire history</li>
+        </ul>
+
+        <a class="btn primary" href="index.html#auth-page">Get Free Plus</a>
+      </article>
+
+      <!-- Pro -->
+      <article class="plan-card floaty reveal" style="--d:.24s" data-price="15">
+        <div class="plan-top">
+          <div>
+            <h3>Pro</h3>
+            <p>For teams hiring constantly and scaling up.</p>
+          </div>
+          <span class="tag">Best</span>
+        </div>
+
+        <div class="price">
+          <span class="amount" data-monthly="$15" data-yearly="$144">$15</span>
+          <span class="per">/month</span>
+        </div>
+
+        <ul class="features">
+          <li><span class="ok">✓</span> Everything in Free Plus</li>
+          <li><span class="ok">✓</span> Team roles + collaboration</li>
+          <li><span class="ok">✓</span> Advanced analytics</li>
+          <li><span class="ok">✓</span> Highest priority support</li>
+        </ul>
+
+        <a class="btn ghost" href="index.html#auth-page">Get Pro</a>
+      </article>
+    </section>
+
+    <section class="faq reveal">
+      <h2>Quick FAQ</h2>
+      <div class="faq-grid">
+        <div class="q">
+          <h4>Do subscriptions replace the balance wallet?</h4>
+          <p>No. Subscriptions unlock features. Hiring still uses your balance.</p>
+        </div>
+        <div class="q">
+          <h4>Can I upgrade anytime?</h4>
+          <p>Yes — upgrade instantly when you need more power.</p>
+        </div>
+        <div class="q">
+          <h4>What if I don’t have enough balance?</h4>
+          <p>The platform blocks hiring until you add funds. No negative balance.</p>
+        </div>
+        <div class="q">
+          <h4>Do you offer refunds?</h4>
+          <p>Depends on your policy, but your UI should clearly state your rules.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta floaty reveal">
+      <div>
+        <h2>Start hiring today</h2>
+        <p>Create your account and choose your plan later — Basic is free.</p>
+      </div>
+      <div class="cta-actions">
+        <a class="btn primary" href="index.html#auth-page">Create Account</a>
+        <a class="btn ghost" href="how-it-works.html">How It Works</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container foot-content">
+      <div class="foot-brand">
+        <span class="brand-name">HireWork</span>
+        <p>Your trusted platform for hiring top professionals.</p>
+      </div>
+      <div class="foot-links">
+        <a href="index.html">Home</a>
+        <a href="how-it-works.html">How It Works</a>
+        <a href="pricing.html">Pricing</a>
+      </div>
+      <div class="foot-bottom">© 2026 HireWork. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <script>
+    // Loader off
+    window.addEventListener('load', () => {
+      const loader = document.getElementById('page-loader');
+      loader.classList.add('done');
+      setTimeout(() => loader.remove(), 550);
+    });
+
+    // Reveal
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) e.target.classList.add('in');
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+    // Monthly/Yearly toggle
+    const btns = document.querySelectorAll('.t-btn');
+    const amounts = document.querySelectorAll('.amount');
+    const per = document.querySelectorAll('.per');
+
+    function setMode(mode){
+      btns.forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+      amounts.forEach(a => {
+        a.textContent = a.dataset[mode];
+      });
+      per.forEach(p => p.textContent = mode === 'monthly' ? '/month' : '/year');
+    }
+
+    btns.forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+    setMode('monthly');
+  </script>
+</body>
+</html>

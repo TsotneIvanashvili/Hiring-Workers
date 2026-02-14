@@ -22,8 +22,38 @@ connectDB();
 app.use(helmet());
 
 // CORS - Cross-Origin Resource Sharing
+const parseAllowedOrigins = (value) =>
+    (value || '')
+        .split(',')
+        .map((origin) => origin.trim())
+        .filter(Boolean);
+
+const configuredOrigins = parseAllowedOrigins(process.env.CORS_ALLOWED_ORIGINS);
+
+if (process.env.FRONTEND_URL) {
+    configuredOrigins.push(process.env.FRONTEND_URL.trim());
+}
+
+const allowedOrigins = [...new Set(configuredOrigins)];
+const isDevelopment = (process.env.NODE_ENV || 'development') === 'development';
+const localOriginPattern = /^http:\/\/(localhost|127\.0\.0\.1):\d+$/;
+
 app.use(cors({
-    origin: process.env.FRONTEND_URL || '*',
+    origin(origin, callback) {
+        // Allow non-browser requests (curl/Postman/server-to-server)
+        if (!origin) {
+            return callback(null, true);
+        }
+
+        const isAllowedByEnv = allowedOrigins.includes(origin);
+        const isAllowedLocalDev = isDevelopment && localOriginPattern.test(origin);
+
+        if (isAllowedByEnv || isAllowedLocalDev) {
+            return callback(null, true);
+        }
+
+        return callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
     credentials: true
 }));
 
@@ -168,3 +198,4 @@ process.on('unhandledRejection', (err) => {
     console.error('Unhandled Rejection:', err);
     process.exit(1);
 });
+
