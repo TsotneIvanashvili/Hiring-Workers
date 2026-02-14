@@ -1,24 +1,29 @@
 const mongoose = require('mongoose');
 
 const hireSchema = new mongoose.Schema({
-    user_id: {
+    userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
     },
-    worker_id: {
+    workerId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Worker',
         required: true
     },
+    amount: {
+        type: Number,
+        required: true
+    },
     status: {
         type: String,
+        enum: ['active', 'completed', 'cancelled'],
         default: 'active'
-    },
-    hired_at: {
-        type: Date,
-        default: Date.now
     }
+}, {
+    timestamps: true
 });
+
+hireSchema.index({ userId: 1, createdAt: -1 });
 
 module.exports = mongoose.model('Hire', hireSchema);
