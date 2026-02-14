@@ -176,8 +176,7 @@ function navigate(page) {
     const pageEl = document.getElementById(`${page}-page`);
     pageEl?.classList.remove('hidden');
 
-    const appPages = ['profile', 'dashboard', 'workers', 'hires', 'feedback'];
-    const activeNavPage = appPages.includes(page) ? 'workers' : page;
+    const activeNavPage = page === 'feedback' ? 'feedback' : 'workers';
     document.querySelectorAll('[data-nav-page]').forEach((link) => {
         const isActive = link.getAttribute('data-nav-page') === activeNavPage;
         link.classList.toggle('active', isActive);
@@ -189,6 +188,7 @@ function navigate(page) {
     }
 
     document.getElementById('user-dropdown')?.classList.add('hidden');
+    closeMobileNav();
 
     if (page === 'profile') loadProfile();
     if (page === 'dashboard') loadDashboard();
@@ -250,13 +250,54 @@ function loadProfile() {
 }
 
 function toggleUserMenu() {
+    closeMobileNav();
     document.getElementById('user-dropdown')?.classList.toggle('hidden');
 }
 
-// Click outside to close dropdown
+function toggleMobileNav() {
+    const mobileNav = document.getElementById('mobile-nav');
+    const burgerBtn = document.getElementById('nav-burger');
+
+    if (!mobileNav || !burgerBtn) return;
+
+    const isOpen = mobileNav.classList.toggle('open');
+    burgerBtn.classList.toggle('open', isOpen);
+    burgerBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+
+    if (isOpen) {
+        document.getElementById('user-dropdown')?.classList.add('hidden');
+    }
+}
+
+function closeMobileNav() {
+    const mobileNav = document.getElementById('mobile-nav');
+    const burgerBtn = document.getElementById('nav-burger');
+
+    mobileNav?.classList.remove('open');
+    burgerBtn?.classList.remove('open');
+    burgerBtn?.setAttribute('aria-expanded', 'false');
+}
+
 document.addEventListener('click', (e) => {
     if (!e.target.closest('.user-menu')) {
         document.getElementById('user-dropdown')?.classList.add('hidden');
+    }
+
+    if (!e.target.closest('#mobile-nav') && !e.target.closest('#nav-burger')) {
+        closeMobileNav();
+    }
+});
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        document.getElementById('user-dropdown')?.classList.add('hidden');
+        closeMobileNav();
+    }
+});
+
+window.addEventListener('resize', () => {
+    if (window.innerWidth > 768) {
+        closeMobileNav();
     }
 });
 

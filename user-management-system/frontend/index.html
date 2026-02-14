@@ -167,6 +167,7 @@
                     </a>
                     <div class="nav-links">
                         <a href="#" class="active" data-nav-page="workers" onclick="navigate('workers'); return false;">Home</a>
+                        <a href="#" data-nav-page="feedback" onclick="navigate('feedback'); return false;">Feedback</a>
                         <a href="./works.html">How It Works</a>
                         <a href="./pricing.html">Pricing</a>
                     </div>
@@ -211,6 +212,20 @@
                                 </button>
                             </div>
                         </div>
+                    </div>
+                    <button class="nav-burger" id="nav-burger" type="button" aria-label="Toggle navigation menu" aria-controls="mobile-nav" aria-expanded="false" onclick="toggleMobileNav()">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                    <div class="mobile-nav" id="mobile-nav">
+                        <a href="#" data-nav-page="workers" onclick="navigate('workers'); return false;">Home</a>
+                        <a href="#" data-nav-page="feedback" onclick="navigate('feedback'); return false;">Feedback</a>
+                        <a href="#" onclick="navigate('dashboard'); return false;">Dashboard</a>
+                        <a href="#" onclick="navigate('hires'); return false;">My Hires</a>
+                        <a href="./works.html">How It Works</a>
+                        <a href="./pricing.html">Pricing</a>
+                        <button type="button" onclick="showFundsModal()">Add Funds</button>
                     </div>
                 </div>
             </div>
