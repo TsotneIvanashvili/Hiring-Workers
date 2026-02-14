@@ -641,6 +641,17 @@ input.error {
     border-color: var(--border-light);
 }
 
+.btn-outline {
+    background: transparent;
+    color: var(--text-primary);
+    border: 1.5px solid var(--border-light);
+}
+
+.btn-outline:hover {
+    background: var(--bg-glass-strong);
+    border-color: var(--primary-light);
+}
+
 .btn-danger {
     background: var(--danger);
     color: white;
@@ -1446,6 +1457,343 @@ input.error {
     gap: 16px;
 }
 
+.hire-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px;
+    transition: var(--transition);
+    backdrop-filter: blur(10px);
+}
+
+.hire-card:hover {
+    border-color: var(--border-light);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.hire-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.hire-worker {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.hire-worker-image {
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-sm);
+}
+
+.hire-info h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.05rem;
+    margin-bottom: 2px;
+    letter-spacing: -0.01em;
+}
+
+.hire-title {
+    color: var(--text-secondary);
+    font-size: 0.88rem;
+    margin-bottom: 8px;
+}
+
+.hire-meta-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.hire-category {
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border);
+    background: var(--bg-glass);
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 4px 9px;
+}
+
+.hire-date {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.hire-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
+}
+
+.hire-rate {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+}
+
+.hire-footer {
+    margin-top: 14px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.hire-complete-btn {
+    width: auto;
+    margin-top: 0;
+    padding: 9px 14px;
+}
+
+/* ============================================
+   Feedback Page
+   ============================================ */
+.feedback-composer {
+    margin-bottom: 18px;
+}
+
+.feedback-composer form {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px;
+}
+
+.feedback-composer label {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.feedback-composer textarea {
+    width: 100%;
+    min-height: 110px;
+    resize: vertical;
+    background: var(--bg-glass);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.92rem;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    transition: var(--transition);
+}
+
+.feedback-composer textarea:focus {
+    outline: none;
+    border-color: var(--border-focus);
+    background: var(--bg-glass-strong);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.feedback-post-btn {
+    width: auto;
+    margin-top: 0;
+    padding: 10px 16px;
+}
+
+.feedback-posts {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.feedback-post {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    transition: var(--transition);
+}
+
+.feedback-post:hover {
+    border-color: var(--border-light);
+    box-shadow: var(--shadow-md);
+}
+
+.feedback-post-header {
+    margin-bottom: 10px;
+}
+
+.feedback-author {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.feedback-author-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.92rem;
+    font-weight: 700;
+}
+
+.feedback-author h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.feedback-author p {
+    color: var(--text-muted);
+    font-size: 0.74rem;
+}
+
+.feedback-content {
+    color: var(--text-primary);
+    font-size: 0.92rem;
+    line-height: 1.7;
+    margin-bottom: 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.feedback-post-actions {
+    margin-bottom: 12px;
+}
+
+.feedback-like-btn {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg-glass);
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.feedback-like-btn:hover {
+    border-color: var(--border-light);
+    color: var(--text-primary);
+    background: var(--bg-glass-strong);
+}
+
+.feedback-like-btn.liked {
+    background: rgba(99, 102, 241, 0.16);
+    border-color: rgba(129, 140, 248, 0.5);
+    color: var(--primary-light);
+}
+
+.feedback-comments {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.feedback-comment {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg-glass);
+    padding: 9px 10px;
+}
+
+.feedback-comment strong {
+    font-size: 0.8rem;
+    color: var(--text-primary);
+}
+
+.feedback-comment span {
+    color: var(--text-secondary);
+    font-size: 0.86rem;
+    line-height: 1.55;
+    word-break: break-word;
+}
+
+.feedback-no-comments {
+    color: var(--text-muted);
+    font-size: 0.82rem;
+}
+
+.feedback-comment-form {
+    display: flex;
+    gap: 8px;
+}
+
+.feedback-comment-form input {
+    flex: 1;
+    background: var(--bg-glass);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.86rem;
+    padding: 9px 10px;
+}
+
+.feedback-comment-form input:focus {
+    outline: none;
+    border-color: var(--border-focus);
+    background: var(--bg-glass-strong);
+}
+
+.feedback-comment-form button {
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: white;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 9px 12px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.feedback-comment-form button:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+}
+
+.feedback-empty {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    text-align: center;
+    padding: 28px 18px;
+}
+
+.feedback-empty h3 {
+    font-family: 'Outfit', sans-serif;
+    margin-bottom: 6px;
+}
+
+.feedback-empty p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
 /* ============================================
    Footer
    ============================================ */
@@ -1767,6 +2115,16 @@ tbody tr:last-child td {
     color: var(--success);
 }
 
+.status-completed {
+    background: rgba(59, 130, 246, 0.14);
+    color: #60a5fa;
+}
+
+.status-cancelled {
+    background: var(--danger-light);
+    color: var(--danger);
+}
+
 .status-inactive {
     background: var(--bg-glass-strong);
     color: var(--text-muted);
@@ -1938,6 +2296,23 @@ tbody tr:last-child td {
         width: 100%;
     }
 
+    .hire-main {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .hire-actions {
+        align-items: flex-start;
+    }
+
+    .hire-footer {
+        justify-content: flex-start;
+    }
+
+    .feedback-comment-form {
+        flex-direction: column;
+    }
+
     .footer-content {
         grid-template-columns: 1fr;
         gap: 28px;
@@ -1988,5 +2363,14 @@ tbody tr:last-child td {
 
     .home-balance-chip {
         width: 100%;
+    }
+
+    .hire-worker {
+        align-items: flex-start;
+    }
+
+    .hire-worker-image {
+        width: 54px;
+        height: 54px;
     }
 }

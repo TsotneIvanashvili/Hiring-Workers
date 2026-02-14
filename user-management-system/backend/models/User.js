@@ -57,6 +57,10 @@ userSchema.index({ createdAt: -1 });
 
 // Virtual for formatted creation date
 userSchema.virtual('formattedDate').get(function() {
+    if (!this.createdAt) {
+        return '';
+    }
+
     return this.createdAt.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',

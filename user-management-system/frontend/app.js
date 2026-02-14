@@ -26,6 +26,7 @@ function setupEventListeners() {
     document.getElementById('login-form')?.addEventListener('submit', handleLogin);
     document.getElementById('register-form')?.addEventListener('submit', handleRegister);
     document.getElementById('funds-form')?.addEventListener('submit', handleAddFunds);
+    document.getElementById('feedback-form')?.addEventListener('submit', handleCreateFeedback);
 }
 
 // ============================================
@@ -114,7 +115,7 @@ async function handleRegister(e) {
         localStorage.setItem('token', token);
         currentUser = data.user;
 
-        showApp('profile');
+        showApp('workers');
         showToast('Account created successfully!', 'success');
 
     } catch (error) {
@@ -175,7 +176,7 @@ function navigate(page) {
     const pageEl = document.getElementById(`${page}-page`);
     pageEl?.classList.remove('hidden');
 
-    const appPages = ['profile', 'dashboard', 'workers', 'hires'];
+    const appPages = ['profile', 'dashboard', 'workers', 'hires', 'feedback'];
     const activeNavPage = appPages.includes(page) ? 'workers' : page;
     document.querySelectorAll('[data-nav-page]').forEach((link) => {
         const isActive = link.getAttribute('data-nav-page') === activeNavPage;
@@ -193,6 +194,7 @@ function navigate(page) {
     if (page === 'dashboard') loadDashboard();
     if (page === 'workers') loadWorkers();
     if (page === 'hires') loadHires();
+    if (page === 'feedback') loadFeedback();
 }
 
 function updateUserDisplay() {
@@ -408,26 +410,48 @@ async function loadHires() {
 }
 
 function renderHireCard(hire) {
-    const worker = hire.workerId;
+    const worker = hire.workerId || {};
+    const workerName = worker.name || 'Unknown Worker';
+    const workerTitle = worker.title || 'Worker';
     const date = new Date(hire.createdAt).toLocaleDateString();
     const completeBtn = hire.status === 'active'
-        ? `<button class="btn btn-outline" onclick='completeHire("${hire._id}")'>Complete</button>`
+        ? `<button class="btn btn-outline hire-complete-btn" onclick='completeHire("${hire._id}")'>Mark Complete</button>`
         : '';
+    const workerImage = worker.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(workerName)}&size=200&background=1a1a26&color=fff`;
+    const workerCategory = worker.category || 'Professional';
+    const statusLabel = hire.status.charAt(0).toUpperCase() + hire.status.slice(1);
 
     return `
         <div class="hire-card">
-            <div class="hire-info">
-                <h3>${worker.name}</h3>
-                <p class="hire-meta">${worker.title} • $${hire.amount}/hr • ${date}</p>
+            <div class="hire-main">
+                <div class="hire-worker">
+                    <img
+                        class="hire-worker-image"
+                        src="${workerImage}"
+                        alt="${workerName}"
+                        loading="lazy"
+                        onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(workerName)}&size=200&background=1a1a26&color=fff';"
+                    >
+                    <div class="hire-info">
+                        <h3>${workerName}</h3>
+                        <p class="hire-title">${workerTitle}</p>
+                        <div class="hire-meta-row">
+                            <span class="hire-category">${workerCategory}</span>
+                            <span class="hire-date">Hired on ${date}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="hire-actions">
+                    <span class="status-badge status-${hire.status}">${statusLabel}</span>
+                    <strong class="hire-rate">$${hire.amount}/hr</strong>
+                </div>
             </div>
-            <div class="hire-actions">
-                <span class="status-badge status-${hire.status}">${hire.status}</span>
+            <div class="hire-footer">
                 ${completeBtn}
             </div>
         </div>
     `;
 }
-
 async function completeHire(hireId) {
     try {
         const res = await fetch(`${API_URL}/hires/${hireId}/complete`, {
@@ -446,6 +470,185 @@ async function completeHire(hireId) {
     } catch (error) {
         showToast('Failed to complete hire', 'error');
     }
+}
+
+// ============================================
+// Feedback
+// ============================================
+async function loadFeedback() {
+    try {
+        const res = await fetch(`${API_URL}/feedback`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            showToast(data.error || 'Failed to load feedback', 'error');
+            return;
+        }
+
+        const posts = data.data || [];
+        const postsEl = document.getElementById('feedback-posts');
+
+        postsEl.innerHTML = posts.length > 0
+            ? posts.map(renderFeedbackPost).join('')
+            : `
+                <div class="feedback-empty">
+                    <h3>No feedback posts yet</h3>
+                    <p>Be the first person to share something with the community.</p>
+                </div>
+            `;
+
+    } catch (error) {
+        console.error('Load feedback error:', error);
+        showToast('Failed to load feedback', 'error');
+    }
+}
+
+async function handleCreateFeedback(e) {
+    e.preventDefault();
+    const form = e.target;
+    const btn = form.querySelector('button[type="submit"]');
+    const contentEl = document.getElementById('feedback-content');
+    const content = contentEl.value.trim();
+
+    if (!content) {
+        showToast('Please write something before posting', 'error');
+        return;
+    }
+
+    setButtonLoading(btn, true);
+
+    try {
+        const res = await fetch(`${API_URL}/feedback`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ content })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            showToast(data.error || 'Failed to publish post', 'error');
+            return;
+        }
+
+        contentEl.value = '';
+        showToast('Post published', 'success');
+        loadFeedback();
+    } catch (error) {
+        console.error('Create feedback post error:', error);
+        showToast('Failed to publish post', 'error');
+    } finally {
+        setButtonLoading(btn, false);
+    }
+}
+
+async function toggleFeedbackLike(postId) {
+    try {
+        const res = await fetch(`${API_URL}/feedback/${postId}/like`, {
+            method: 'PATCH',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            showToast(data.error || 'Failed to update like', 'error');
+            return;
+        }
+
+        loadFeedback();
+    } catch (error) {
+        console.error('Toggle feedback like error:', error);
+        showToast('Failed to update like', 'error');
+    }
+}
+
+async function submitFeedbackComment(e, postId) {
+    e.preventDefault();
+    const form = e.target;
+    const input = form.querySelector('input[name="comment"]');
+    const text = input.value.trim();
+
+    if (!text) {
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_URL}/feedback/${postId}/comments`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ text })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            showToast(data.error || 'Failed to add comment', 'error');
+            return;
+        }
+
+        input.value = '';
+        loadFeedback();
+    } catch (error) {
+        console.error('Add feedback comment error:', error);
+        showToast('Failed to add comment', 'error');
+    }
+}
+
+function renderFeedbackPost(post) {
+    const author = post.userId?.name || 'User';
+    const created = new Date(post.createdAt).toLocaleString();
+    const likes = Array.isArray(post.likes) ? post.likes : [];
+    const comments = Array.isArray(post.comments) ? post.comments : [];
+    const userLiked = likes.some((likeId) => String(likeId) === String(currentUser?.id));
+
+    return `
+        <article class="feedback-post">
+            <header class="feedback-post-header">
+                <div class="feedback-author">
+                    <div class="feedback-author-avatar">${escapeHtml(author.charAt(0).toUpperCase())}</div>
+                    <div>
+                        <h3>${escapeHtml(author)}</h3>
+                        <p>${escapeHtml(created)}</p>
+                    </div>
+                </div>
+            </header>
+
+            <p class="feedback-content">${escapeHtml(post.content)}</p>
+
+            <div class="feedback-post-actions">
+                <button class="feedback-like-btn ${userLiked ? 'liked' : ''}" onclick="toggleFeedbackLike('${post._id}')">
+                    ${userLiked ? 'Liked' : 'Like'} (${likes.length})
+                </button>
+            </div>
+
+            <div class="feedback-comments">
+                ${comments.length > 0
+                    ? comments.map((comment) => `
+                        <div class="feedback-comment">
+                            <strong>${escapeHtml(comment.userId?.name || 'User')}</strong>
+                            <span>${escapeHtml(comment.text)}</span>
+                        </div>
+                    `).join('')
+                    : '<p class="feedback-no-comments">No comments yet.</p>'
+                }
+            </div>
+
+            <form class="feedback-comment-form" onsubmit="submitFeedbackComment(event, '${post._id}')">
+                <input type="text" name="comment" maxlength="400" placeholder="Add a comment..." required>
+                <button type="submit">Comment</button>
+            </form>
+        </article>
+    `;
 }
 
 // ============================================
@@ -541,5 +744,15 @@ function showToast(message, type = 'success') {
         toast.classList.add('hidden');
     }, 3000);
 }
+
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 
 

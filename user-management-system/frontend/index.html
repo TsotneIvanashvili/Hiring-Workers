@@ -201,6 +201,10 @@
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
                                     My Hires
                                 </button>
+                                <button onclick="navigate('feedback')">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                                    Feedback
+                                </button>
                                 <button onclick="logout()" class="logout-btn">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
                                     Logout
@@ -363,6 +367,33 @@
                     <div id="hires-container" class="hires-list"></div>
                 </div>
             </div>
+
+            <!-- Feedback Page -->
+            <div id="feedback-page" class="page-content hidden">
+                <div class="container">
+                    <div class="page-header">
+                        <div>
+                            <h1>Community Feedback</h1>
+                            <p class="page-subtitle">Share updates, react to posts, and discuss with other clients</p>
+                        </div>
+                    </div>
+
+                    <section class="feedback-composer">
+                        <form id="feedback-form">
+                            <label for="feedback-content">Post an update</label>
+                            <textarea id="feedback-content" rows="4" placeholder="Share your experience or tips..." maxlength="1500" required></textarea>
+                            <button type="submit" class="btn btn-primary feedback-post-btn">
+                                <span class="btn-text">Publish Post</span>
+                                <span class="btn-spinner hidden"></span>
+                            </button>
+                        </form>
+                    </section>
+
+                    <section class="feedback-feed">
+                        <div id="feedback-posts" class="feedback-posts"></div>
+                    </section>
+                </div>
+            </div>
         </main>
 
         <!-- Footer -->
@@ -387,6 +418,7 @@
                         <a href="#" onclick="navigate('workers')">Find Talent</a>
                         <a href="#" onclick="navigate('dashboard')">Dashboard</a>
                         <a href="#" onclick="navigate('hires')">My Hires</a>
+                        <a href="#" onclick="navigate('feedback')">Feedback</a>
                     </div>
                     <div class="footer-section">
                         <h4>Support</h4>

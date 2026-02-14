@@ -69,7 +69,7 @@ router.post('/', protect, async (req, res) => {
 router.get('/', protect, async (req, res) => {
     try {
         const hires = await Hire.find({ userId: req.user._id })
-            .populate('workerId', 'name title hourlyRate category')
+            .populate('workerId', 'name title hourlyRate category image rating')
             .sort({ createdAt: -1 });
 
         res.status(200).json({

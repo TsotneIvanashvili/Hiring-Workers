@@ -110,6 +110,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/workers', require('./routes/workers'));
 app.use('/api/hires', require('./routes/hires'));
 app.use('/api/users', require('./routes/users'));
+app.use('/api/feedback', require('./routes/feedback'));
 
 // Root route
 app.get('/', (req, res) => {
@@ -133,6 +134,12 @@ app.get('/', (req, res) => {
                 hire: 'POST /api/hires',
                 history: 'GET /api/hires',
                 complete: 'PATCH /api/hires/:id/complete'
+            },
+            feedback: {
+                getAll: 'GET /api/feedback',
+                create: 'POST /api/feedback',
+                toggleLike: 'PATCH /api/feedback/:id/like',
+                addComment: 'POST /api/feedback/:id/comments'
             },
             users: {
                 create: 'POST /api/users',
