@@ -37,6 +37,7 @@ if (process.env.FRONTEND_URL) {
 const allowedOrigins = [...new Set(configuredOrigins)];
 const isDevelopment = (process.env.NODE_ENV || 'development') === 'development';
 const localOriginPattern = /^http:\/\/(localhost|127\.0\.0\.1):\d+$/;
+const allowNullOriginInDev = process.env.ALLOW_NULL_ORIGIN_IN_DEV !== 'false';
 
 app.use(cors({
     origin(origin, callback) {
@@ -47,8 +48,9 @@ app.use(cors({
 
         const isAllowedByEnv = allowedOrigins.includes(origin);
         const isAllowedLocalDev = isDevelopment && localOriginPattern.test(origin);
+        const isAllowedNullDev = isDevelopment && allowNullOriginInDev && origin === 'null';
 
-        if (isAllowedByEnv || isAllowedLocalDev) {
+        if (isAllowedByEnv || isAllowedLocalDev || isAllowedNullDev) {
             return callback(null, true);
         }
 

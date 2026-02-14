@@ -82,7 +82,12 @@ async function handleLogin(e) {
         showToast('Welcome back!', 'success');
 
     } catch (error) {
-        showAuthError('Connection error. Check that the backend is running and CORS allows this frontend origin.');
+        const isFileOrigin = window.location.protocol === 'file:';
+        showAuthError(
+            isFileOrigin
+                ? 'Connection error. Open the app via http://localhost (Live Server), or enable null origin in backend dev CORS.'
+                : 'Connection error. Check that the backend is running and CORS allows this frontend origin.'
+        );
     } finally {
         setButtonLoading(btn, false);
     }
@@ -119,7 +124,12 @@ async function handleRegister(e) {
         showToast('Account created successfully!', 'success');
 
     } catch (error) {
-        showAuthError('Connection error. Check that the backend is running and CORS allows this frontend origin.');
+        const isFileOrigin = window.location.protocol === 'file:';
+        showAuthError(
+            isFileOrigin
+                ? 'Connection error. Open the app via http://localhost (Live Server), or enable null origin in backend dev CORS.'
+                : 'Connection error. Check that the backend is running and CORS allows this frontend origin.'
+        );
     } finally {
         setButtonLoading(btn, false);
     }
