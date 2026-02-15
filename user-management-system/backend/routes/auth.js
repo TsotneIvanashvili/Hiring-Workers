@@ -3,6 +3,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { protect } = require('../middleware/auth');
+const { sendWelcomeEmail } = require('../utils/mailer');
 const MAX_AVATAR_SIZE_CHARS = 5 * 1024 * 1024;
 const HTTP_IMAGE_URL_PATTERN = /^https?:\/\/\S+$/i;
 const DATA_IMAGE_URL_PATTERN = /^data:image\/[a-zA-Z0-9.+-]+;base64,/;
@@ -124,6 +125,9 @@ router.post('/login', async (req, res) => {
         }
 
         const token = generateToken(user._id);
+
+        // Send welcome email async — do not await, so login is never blocked
+        sendWelcomeEmail(user.email);
 
         res.status(200).json({
             success: true,

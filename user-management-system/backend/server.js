@@ -9,6 +9,9 @@ const connectDB = require('./config/database');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Trust first proxy (needed for Render, Railway, etc.)
+app.set('trust proxy', 1);
+
 // ============================================
 // Database Connection
 // ============================================
