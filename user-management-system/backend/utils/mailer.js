@@ -3,9 +3,14 @@ const net = require('net');
 const nodemailer = require('nodemailer');
 
 const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com';
-const parsedPort = Number(process.env.SMTP_PORT || 465);
-const smtpPort = Number.isNaN(parsedPort) ? 465 : parsedPort;
+const parsedSmtpPort = Number(process.env.SMTP_PORT || 465);
+const smtpPort = Number.isNaN(parsedSmtpPort) ? 465 : parsedSmtpPort;
 const smtpSecure = String(process.env.SMTP_SECURE || 'true').toLowerCase() === 'true';
+const parsedSocketConnectTimeoutMs = Number(process.env.SMTP_SOCKET_CONNECT_TIMEOUT_MS || 10000);
+const socketConnectTimeoutMs =
+    Number.isNaN(parsedSocketConnectTimeoutMs) || parsedSocketConnectTimeoutMs < 1000
+        ? 10000
+        : Math.floor(parsedSocketConnectTimeoutMs);
 
 function parseBoolean(value, defaultValue) {
     if (value === undefined) {
@@ -48,55 +53,77 @@ function isRetryableConnectionError(error) {
     return message.includes('timeout') || message.includes('enetunreach') || message.includes('ehostunreach');
 }
 
-async function resolveTransportTargets() {
+async function resolveSocketHost() {
     const forceIpv4 = parseBoolean(process.env.SMTP_FORCE_IPV4, false);
-    const hostIsIp = net.isIP(smtpHost);
-    const tlsServernameFromEnv = process.env.SMTP_TLS_SERVERNAME;
-    const tlsServername = tlsServernameFromEnv || (hostIsIp ? undefined : smtpHost);
-    const parsedMaxIpv4Targets = Number(process.env.SMTP_MAX_IPV4_TARGETS || 3);
-    const maxIpv4Targets =
-        Number.isNaN(parsedMaxIpv4Targets) || parsedMaxIpv4Targets < 1 ? 3 : Math.floor(parsedMaxIpv4Targets);
 
-    if (!forceIpv4 || hostIsIp) {
-        return [{ host: smtpHost, tlsServername }];
+    if (!forceIpv4 || net.isIP(smtpHost)) {
+        return smtpHost;
     }
 
     try {
-        const ipv4Addresses = await dns.resolve4(smtpHost);
-        if (ipv4Addresses.length > 0) {
-            const ipv4Targets = [...new Set(ipv4Addresses)].slice(0, maxIpv4Targets).map((ipAddress) => ({
-                host: ipAddress,
-                tlsServername: tlsServernameFromEnv || smtpHost
-            }));
-
-            // Keep hostname as a final fallback so Node/Nodemailer can still use IPv6 when available.
-            return [
-                ...ipv4Targets,
-                {
-                    host: smtpHost,
-                    tlsServername: tlsServernameFromEnv || smtpHost
-                }
-            ];
+        const record = await dns.lookup(smtpHost, { family: 4 });
+        if (record && record.address) {
+            return record.address;
         }
     } catch (error) {
-        console.warn(`SMTP IPv4 resolve failed for ${smtpHost}: ${error.message}. Falling back to hostname.`);
+        console.warn(`SMTP IPv4 lookup failed for ${smtpHost}: ${error.message}. Falling back to hostname.`);
     }
 
-    return [{ host: smtpHost, tlsServername }];
+    return smtpHost;
 }
 
-function buildTransportConfig({ host, port, secure, tlsServername, requireTLS = false }) {
+function createSocketConnector({ connectHost, connectPort }) {
+    return (_options, callback) => {
+        let settled = false;
+
+        const done = (err, data) => {
+            if (settled) {
+                return;
+            }
+            settled = true;
+            callback(err, data);
+        };
+
+        const socket = net.connect({
+            host: connectHost,
+            port: connectPort
+        });
+
+        socket.setTimeout(socketConnectTimeoutMs);
+
+        socket.once('connect', () => {
+            socket.setTimeout(0);
+            done(null, { connection: socket });
+        });
+
+        socket.once('timeout', () => {
+            const timeoutError = new Error('Connection timeout');
+            timeoutError.code = 'ETIMEDOUT';
+            socket.destroy();
+            done(timeoutError);
+        });
+
+        socket.once('error', (error) => {
+            done(error);
+        });
+    };
+}
+
+function buildTransportConfig({ connectHost, connectPort, secure, requireTLS }) {
+    const tlsServername = process.env.SMTP_TLS_SERVERNAME || (net.isIP(smtpHost) ? undefined : smtpHost);
+
     const transporterConfig = {
-        host,
-        port,
+        host: smtpHost,
+        port: connectPort,
         secure,
         auth: {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS
         },
-        connectionTimeout: 10000,
+        connectionTimeout: socketConnectTimeoutMs,
         greetingTimeout: 10000,
-        socketTimeout: 10000
+        socketTimeout: 10000,
+        getSocket: createSocketConnector({ connectHost, connectPort })
     };
 
     if (requireTLS) {
@@ -113,43 +140,22 @@ function buildTransportConfig({ host, port, secure, tlsServername, requireTLS = 
 }
 
 async function getTransportAttempts() {
-    const targets = await resolveTransportTargets();
+    const connectHost = await resolveSocketHost();
     const attempts = [];
-    const seenSignatures = new Set();
-
+    const baseLabelHost = connectHost === smtpHost ? smtpHost : `${smtpHost} (${connectHost})`;
     const gmailPortFallbackEnabled = parseBoolean(
         process.env.SMTP_ENABLE_GMAIL_PORT_FALLBACK,
         isGmailHost(smtpHost)
     );
 
-    const addAttempt = ({ host, tlsServername, port, secure, requireTLS, label }) => {
-        const signature = `${host}:${port}:${secure ? 'secure' : 'starttls'}:${requireTLS ? 'require' : 'optional'}`;
-        if (seenSignatures.has(signature)) {
-            return;
-        }
-
-        seenSignatures.add(signature);
-        attempts.push({
-            label,
-            config: buildTransportConfig({
-                host,
-                port,
-                secure,
-                tlsServername,
-                requireTLS
-            })
-        });
-    };
-
-    targets.forEach(({ host, tlsServername }) => {
-        addAttempt({
-            host,
-            tlsServername,
-            port: smtpPort,
+    attempts.push({
+        label: `${baseLabelHost}:${smtpPort} (${smtpSecure ? 'SSL/TLS' : 'STARTTLS'})`,
+        config: buildTransportConfig({
+            connectHost,
+            connectPort: smtpPort,
             secure: smtpSecure,
-            requireTLS: false,
-            label: `${host}:${smtpPort} (${smtpSecure ? 'SSL/TLS' : 'STARTTLS'})`
-        });
+            requireTLS: false
+        })
     });
 
     const shouldAddGmail587Fallback =
@@ -159,15 +165,14 @@ async function getTransportAttempts() {
         smtpSecure === true;
 
     if (shouldAddGmail587Fallback) {
-        targets.forEach(({ host, tlsServername }) => {
-            addAttempt({
-                host,
-                tlsServername,
-                port: 587,
+        attempts.push({
+            label: `${baseLabelHost}:587 (STARTTLS fallback)`,
+            config: buildTransportConfig({
+                connectHost,
+                connectPort: 587,
                 secure: false,
-                requireTLS: true,
-                label: `${host}:587 (STARTTLS fallback)`
-            });
+                requireTLS: true
+            })
         });
     }
 
