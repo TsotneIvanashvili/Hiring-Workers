@@ -49,7 +49,7 @@ function isRetryableConnectionError(error) {
 }
 
 async function resolveTransportTargets() {
-    const forceIpv4 = parseBoolean(process.env.SMTP_FORCE_IPV4, isGmailHost(smtpHost));
+    const forceIpv4 = parseBoolean(process.env.SMTP_FORCE_IPV4, false);
     const hostIsIp = net.isIP(smtpHost);
     const tlsServernameFromEnv = process.env.SMTP_TLS_SERVERNAME;
     const tlsServername = tlsServernameFromEnv || (hostIsIp ? undefined : smtpHost);
@@ -64,10 +64,19 @@ async function resolveTransportTargets() {
     try {
         const ipv4Addresses = await dns.resolve4(smtpHost);
         if (ipv4Addresses.length > 0) {
-            return [...new Set(ipv4Addresses)].slice(0, maxIpv4Targets).map((ipAddress) => ({
+            const ipv4Targets = [...new Set(ipv4Addresses)].slice(0, maxIpv4Targets).map((ipAddress) => ({
                 host: ipAddress,
                 tlsServername: tlsServernameFromEnv || smtpHost
             }));
+
+            // Keep hostname as a final fallback so Node/Nodemailer can still use IPv6 when available.
+            return [
+                ...ipv4Targets,
+                {
+                    host: smtpHost,
+                    tlsServername: tlsServernameFromEnv || smtpHost
+                }
+            ];
         }
     } catch (error) {
         console.warn(`SMTP IPv4 resolve failed for ${smtpHost}: ${error.message}. Falling back to hostname.`);
