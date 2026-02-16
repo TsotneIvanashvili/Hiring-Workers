@@ -3,7 +3,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { protect } = require('../middleware/auth');
-const { sendWelcomeEmail } = require('../utils/mailer');
+const { sendRegistrationEmail, sendLoginEmail } = require('../utils/mailer');
 const MAX_AVATAR_SIZE_CHARS = 5 * 1024 * 1024;
 const HTTP_IMAGE_URL_PATTERN = /^https?:\/\/\S+$/i;
 const DATA_IMAGE_URL_PATTERN = /^data:image\/[a-zA-Z0-9.+-]+;base64,/;
@@ -66,8 +66,12 @@ router.post('/register', async (req, res) => {
         }
 
         const user = await User.create(userPayload);
-
         const token = generateToken(user._id);
+
+        sendRegistrationEmail({
+            email: user.email,
+            name: user.name
+        });
 
         res.status(201).json({
             success: true,
@@ -80,7 +84,6 @@ router.post('/register', async (req, res) => {
                 balance: user.balance
             }
         });
-
     } catch (error) {
         console.error('Register error:', error);
         res.status(500).json({
@@ -126,8 +129,11 @@ router.post('/login', async (req, res) => {
 
         const token = generateToken(user._id);
 
-        // Send welcome email async — do not await, so login is never blocked
-        sendWelcomeEmail(user.email);
+        // Send login email asynchronously so login is never blocked
+        sendLoginEmail({
+            email: user.email,
+            name: user.name
+        });
 
         res.status(200).json({
             success: true,
@@ -140,7 +146,6 @@ router.post('/login', async (req, res) => {
                 balance: user.balance
             }
         });
-
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({
@@ -190,7 +195,6 @@ router.post('/add-funds', protect, async (req, res) => {
             message: `$${amount} added to your balance`,
             balance: req.user.balance
         });
-
     } catch (error) {
         console.error('Add funds error:', error);
         res.status(500).json({

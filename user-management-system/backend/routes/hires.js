@@ -3,6 +3,7 @@ const router = express.Router();
 const Hire = require('../models/Hire');
 const Worker = require('../models/Worker');
 const { protect } = require('../middleware/auth');
+const { sendHireConfirmationEmail } = require('../utils/mailer');
 
 // @route   POST /api/hires
 // @desc    Hire a worker
@@ -45,6 +46,15 @@ router.post('/', protect, async (req, res) => {
             userId: req.user._id,
             workerId: worker._id,
             amount: worker.hourlyRate
+        });
+
+        sendHireConfirmationEmail({
+            email: req.user.email,
+            name: req.user.name,
+            workerName: worker.name,
+            amount: worker.hourlyRate,
+            balance: req.user.balance,
+            hireId: hire._id.toString()
         });
 
         res.status(201).json({
