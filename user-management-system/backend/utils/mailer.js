@@ -3,7 +3,8 @@ const net = require('net');
 const nodemailer = require('nodemailer');
 
 const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com';
-const smtpPort = Number(process.env.SMTP_PORT || 465);
+const parsedPort = Number(process.env.SMTP_PORT || 465);
+const smtpPort = Number.isNaN(parsedPort) ? 465 : parsedPort;
 const smtpSecure = String(process.env.SMTP_SECURE || 'true').toLowerCase() === 'true';
 
 function parseBoolean(value, defaultValue) {
@@ -24,42 +25,62 @@ function parseBoolean(value, defaultValue) {
     return defaultValue;
 }
 
-async function resolveTransportHost() {
-    const forceIpv4 = parseBoolean(process.env.SMTP_FORCE_IPV4, /gmail\.com$/i.test(smtpHost));
+function isGmailHost(hostname) {
+    return /(^|\.)gmail\.com$/i.test(hostname);
+}
+
+function isRetryableConnectionError(error) {
+    const retryableCodes = new Set([
+        'ETIMEDOUT',
+        'ESOCKET',
+        'ECONNECTION',
+        'ENETUNREACH',
+        'EHOSTUNREACH',
+        'ECONNREFUSED',
+        'EAI_AGAIN'
+    ]);
+
+    if (error && retryableCodes.has(error.code)) {
+        return true;
+    }
+
+    const message = ((error && error.message) || '').toLowerCase();
+    return message.includes('timeout') || message.includes('enetunreach') || message.includes('ehostunreach');
+}
+
+async function resolveTransportTargets() {
+    const forceIpv4 = parseBoolean(process.env.SMTP_FORCE_IPV4, isGmailHost(smtpHost));
     const hostIsIp = net.isIP(smtpHost);
-    const explicitTlsServername = process.env.SMTP_TLS_SERVERNAME;
+    const tlsServernameFromEnv = process.env.SMTP_TLS_SERVERNAME;
+    const tlsServername = tlsServernameFromEnv || (hostIsIp ? undefined : smtpHost);
+    const parsedMaxIpv4Targets = Number(process.env.SMTP_MAX_IPV4_TARGETS || 3);
+    const maxIpv4Targets =
+        Number.isNaN(parsedMaxIpv4Targets) || parsedMaxIpv4Targets < 1 ? 3 : Math.floor(parsedMaxIpv4Targets);
 
     if (!forceIpv4 || hostIsIp) {
-        return {
-            host: smtpHost,
-            tlsServername: explicitTlsServername || (hostIsIp ? undefined : smtpHost)
-        };
+        return [{ host: smtpHost, tlsServername }];
     }
 
     try {
         const ipv4Addresses = await dns.resolve4(smtpHost);
         if (ipv4Addresses.length > 0) {
-            return {
-                host: ipv4Addresses[0],
-                tlsServername: explicitTlsServername || smtpHost
-            };
+            return [...new Set(ipv4Addresses)].slice(0, maxIpv4Targets).map((ipAddress) => ({
+                host: ipAddress,
+                tlsServername: tlsServernameFromEnv || smtpHost
+            }));
         }
     } catch (error) {
         console.warn(`SMTP IPv4 resolve failed for ${smtpHost}: ${error.message}. Falling back to hostname.`);
     }
 
-    return {
-        host: smtpHost,
-        tlsServername: explicitTlsServername || smtpHost
-    };
+    return [{ host: smtpHost, tlsServername }];
 }
 
-async function createTransporter() {
-    const { host, tlsServername } = await resolveTransportHost();
+function buildTransportConfig({ host, port, secure, tlsServername, requireTLS = false }) {
     const transporterConfig = {
         host,
-        port: Number.isNaN(smtpPort) ? 465 : smtpPort,
-        secure: smtpSecure,
+        port,
+        secure,
         auth: {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS
@@ -69,13 +90,79 @@ async function createTransporter() {
         socketTimeout: 10000
     };
 
+    if (requireTLS) {
+        transporterConfig.requireTLS = true;
+    }
+
     if (tlsServername) {
         transporterConfig.tls = {
             servername: tlsServername
         };
     }
 
-    return nodemailer.createTransport(transporterConfig);
+    return transporterConfig;
+}
+
+async function getTransportAttempts() {
+    const targets = await resolveTransportTargets();
+    const attempts = [];
+    const seenSignatures = new Set();
+
+    const gmailPortFallbackEnabled = parseBoolean(
+        process.env.SMTP_ENABLE_GMAIL_PORT_FALLBACK,
+        isGmailHost(smtpHost)
+    );
+
+    const addAttempt = ({ host, tlsServername, port, secure, requireTLS, label }) => {
+        const signature = `${host}:${port}:${secure ? 'secure' : 'starttls'}:${requireTLS ? 'require' : 'optional'}`;
+        if (seenSignatures.has(signature)) {
+            return;
+        }
+
+        seenSignatures.add(signature);
+        attempts.push({
+            label,
+            config: buildTransportConfig({
+                host,
+                port,
+                secure,
+                tlsServername,
+                requireTLS
+            })
+        });
+    };
+
+    targets.forEach(({ host, tlsServername }) => {
+        addAttempt({
+            host,
+            tlsServername,
+            port: smtpPort,
+            secure: smtpSecure,
+            requireTLS: false,
+            label: `${host}:${smtpPort} (${smtpSecure ? 'SSL/TLS' : 'STARTTLS'})`
+        });
+    });
+
+    const shouldAddGmail587Fallback =
+        gmailPortFallbackEnabled &&
+        isGmailHost(smtpHost) &&
+        smtpPort === 465 &&
+        smtpSecure === true;
+
+    if (shouldAddGmail587Fallback) {
+        targets.forEach(({ host, tlsServername }) => {
+            addAttempt({
+                host,
+                tlsServername,
+                port: 587,
+                secure: false,
+                requireTLS: true,
+                label: `${host}:587 (STARTTLS fallback)`
+            });
+        });
+    }
+
+    return attempts;
 }
 
 function formatCurrency(value) {
@@ -101,12 +188,32 @@ async function sendEmail({ to, subject, html }) {
         html
     };
 
-    try {
-        const transporter = await createTransporter();
-        await transporter.sendMail(mailOptions);
-        console.log(`Email sent to ${to}: ${subject}`);
-    } catch (error) {
-        console.error(`Failed to send email to ${to}:`, error.message);
+    const attempts = await getTransportAttempts();
+    let lastError = null;
+
+    for (let attemptIndex = 0; attemptIndex < attempts.length; attemptIndex += 1) {
+        const attempt = attempts[attemptIndex];
+
+        try {
+            const transporter = nodemailer.createTransport(attempt.config);
+            await transporter.sendMail(mailOptions);
+            console.log(`Email sent to ${to}: ${subject} via ${attempt.label}`);
+            return;
+        } catch (error) {
+            lastError = error;
+            const isRetryable = isRetryableConnectionError(error);
+            console.warn(
+                `SMTP attempt ${attemptIndex + 1}/${attempts.length} failed for ${to} via ${attempt.label}: ${error.message}`
+            );
+
+            if (!isRetryable) {
+                break;
+            }
+        }
+    }
+
+    if (lastError) {
+        console.error(`Failed to send email to ${to}:`, lastError.message);
     }
 }
 
